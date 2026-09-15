@@ -1,0 +1,174 @@
+/* =========================================================
+   HIREBASE - APP HEADER / NAVIGATION / FOOTER
+   ========================================================= */
+
+
+/* ================= APP HEADER ================= */
+
+.app-header {
+    width: 100%;
+    min-height: 72px;
+
+    padding: 0 6%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+
+/* ================= LOGO ================= */
+
+.app-logo {
+    color: #172033;
+    font-size: 23px;
+    font-weight: 800;
+    text-decoration: none;
+    letter-spacing: -0.5px;
+}
+
+.app-logo span {
+    color: #2563eb;
+}
+
+.app-logo:hover {
+    text-decoration: none;
+}
+
+
+/* ================= NAVIGATION ================= */
+
+.app-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.app-nav a {
+    padding: 9px 13px;
+
+    color: #64748b;
+
+    border-radius: 7px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    text-decoration: none;
+}
+
+.app-nav a:hover {
+    background: #f1f5f9;
+    color: #172033;
+    text-decoration: none;
+}
+
+.app-nav a.active {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+
+/* ================= APP FOOTER ================= */
+
+.app-footer {
+    width: 100%;
+
+    padding: 28px 6%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+
+    color: #64748b;
+
+    font-size: 13px;
+}
+
+.app-footer strong {
+    color: #172033;
+    font-size: 17px;
+}
+
+.app-footer strong span {
+    color: #2563eb;
+}
+
+.app-footer p {
+    margin-top: 4px;
+}
+
+
+/* ================= COMMON SECTION LABEL ================= */
+
+.section-label {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+
+/* ================= APP RESPONSIVE ================= */
+
+@media (max-width: 900px) {
+
+    .app-header {
+        padding: 0 5%;
+    }
+
+    .app-nav {
+        gap: 2px;
+    }
+
+    .app-nav a {
+        padding: 8px 9px;
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .app-header {
+        min-height: auto;
+        padding: 16px 20px;
+
+        flex-direction: column;
+        align-items: flex-start;
+
+        gap: 12px;
+    }
+
+    .app-nav {
+        width: 100%;
+
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .app-nav a {
+        font-size: 12px;
+    }
+
+    .app-footer {
+        padding: 25px 20px;
+
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+}

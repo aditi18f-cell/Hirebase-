@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Post Job - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/post-job.css" />
+  </head>
+
+  <body>
+
+    <div class="post-job-container">
+
+      <div class="post-job-header">
+        <h1>Post New Job</h1>
+        <p>Create a new job opening for candidates.</p>
+      </div>
+
+      <div class="post-job-card">
+
+        <div id="message" class="post-job-message"></div>
+
+        <form id="jobForm" class="post-job-form">
+
+          <input
+            type="hidden"
+            id="employerId"
+            name="employerId"
+          />
+
+          <div class="form-group full-width">
+            <label for="jobTitle">
+              Job Title
+            </label>
+
+            <input
+              type="text"
+              id="jobTitle"
+              name="jobTitle"
+              placeholder="Example: Java Developer"
+              required
+            />
+          </div>
+
+
+          <div class="form-group full-width">
+            <label for="jobDescription">
+              Job Description
+            </label>
+
+            <textarea
+              id="jobDescription"
+              name="jobDescription"
+              rows="5"
+              placeholder="Enter job responsibilities and requirements"
+              required
+            ></textarea>
+          </div>
+
+
+          <div class="form-group full-width">
+            <label for="requiredSkills">
+              Required Skills
+            </label>
+
+            <textarea
+              id="requiredSkills"
+              name="requiredSkills"
+              rows="3"
+              placeholder="Example: Java, Python, MySQL, HTML, CSS"
+              required
+            ></textarea>
+
+            <small class="form-hint">
+              Enter skills separated by commas.
+            </small>
+          </div>
+
+
+          <div class="form-group">
+            <label for="location">
+              Location
+            </label>
+
+            <input
+              type="text"
+              id="location"
+              name="location"
+              placeholder="Example: Dehradun"
+              required
+            />
+          </div>
+
+
+          <div class="form-group">
+            <label for="salary">
+              Salary (INR)
+            </label>
+
+            <input
+              type="number"
+              id="salary"
+              name="salary"
+              step="0.01"
+              placeholder="Example: 30000"
+              required
+            />
+          </div>
+
+
+          <div class="form-group">
+            <label for="jobType">
+              Job Type
+            </label>
+
+            <select
+              id="jobType"
+              name="jobType"
+              required
+            >
+              <option value="Full-time">Full-time</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Contract">Contract</option>
+            </select>
+          </div>
+
+
+          <div class="form-group">
+            <label for="experienceRequired">
+              Experience Required (years)
+            </label>
+
+            <input
+              type="number"
+              id="experienceRequired"
+              name="experienceRequired"
+              min="0"
+              placeholder="Example: 0"
+              required
+            />
+          </div>
+
+
+          <div class="post-job-actions full-width">
+
+            <button type="submit">
+              Post Job
+            </button>
+
+            <a href="employer-dashboard.html">
+              Cancel
+            </a>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+  </body>
+</html><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Post Job - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/post-job.css" />
+  </head>
+
+  <body>
+
+    <div class="post-job-container">
+
+      <div class="post-job-header">
+        <h1>Post New Job</h1>
+        <p>Create a new job opening for candidates.</p>
+      </div>
+
+      <div class="post-job-card">
+
+        <div id="message" class="post-job-message"></div>
+
+        <form id="jobForm" class="post-job-form">
+
+          <input
+            type="hidden"
+            id="employerId"
+            name="employerId"
+          />
+
+          <div class="form-group full-width">
+            <label for="jobTitle">
+              Job Title
+            </label>
+
+            <input
+              type="text"
+              id="jobTitle"
+              name="jobTitle"
+              placeholder="Example: Java Developer"
+              required
+            />
+          </div>
+
+
+          <div class="form-group full-width">
+            <label for="jobDescription">
+              Job Description
+            </label>
+
+            <textarea
+              id="jobDescription"
+              name="jobDescription"
+              rows="5"
+              placeholder="Enter job responsibilities and requirements"
+              required
+            ></textarea>
+          </div>
+
+
+          <div class="form-group full-width">
+            <label for="requiredSkills">
+              Required Skills
+            </label>
+
+            <textarea
+              id="requiredSkills"
+              name="requiredSkills"
+              rows="3"
+              placeholder="Example: Java, Python, MySQL, HTML, CSS"
+              required
+            ></textarea>
+
+            <small class="form-hint">
+              Enter skills separated by commas.
+            </small>
+          </div>
+
+
+          <div class="form-group">
+            <label for="location">
+              Location
+            </label>
+
+            <input
+              type="text"
+              id="location"
+              name="location"
+              placeholder="Example: Dehradun"
+              required
+            />
+          </div>
+
+
+          <div class="form-group">
+            <label for="salary">
+              Salary (INR)
+            </label>
+
+            <input
+              type="number"
+              id="salary"
+              name="salary"
+              step="0.01"
+              placeholder="Example: 30000"
+              required
+            />
+          </div>
+
+
+          <div class="form-group">
+            <label for="jobType">
+              Job Type
+            </label>
+
+            <select
+              id="jobType"
+              name="jobType"
+              required
+            >
+              <option value="Full-time">Full-time</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Contract">Contract</option>
+            </select>
+          </div>
+
+
+          <div class="form-group">
+            <label for="experienceRequired">
+              Experience Required (years)
+            </label>
+
+            <input
+              type="number"
+              id="experienceRequired"
+              name="experienceRequired"
+              min="0"
+              placeholder="Example: 0"
+              required
+            />
+          </div>
+
+
+          <div class="post-job-actions full-width">
+
+            <button type="submit">
+              Post Job
+            </button>
+
+            <a href="employer-dashboard.html">
+              Cancel
+            </a>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+  </body>
+</html>

@@ -1,0 +1,316 @@
+/* =========================================================
+   HIREBASE - JOB DETAILS
+   ========================================================= */
+
+
+/* ================= JOB DETAILS CONTAINER ================= */
+
+.job-details-container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 40px auto;
+}
+
+
+/* ================= JOB DETAILS HEADER ================= */
+
+.job-details-header {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+
+    padding: 30px;
+
+    margin-bottom: 20px;
+
+    box-shadow: 0 7px 22px rgba(15, 23, 42, 0.05);
+}
+
+.job-details-header h1 {
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+.job-details-company {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* ================= JOB DETAILS GRID ================= */
+
+.job-details-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+
+/* ================= JOB DETAILS CARD ================= */
+
+.job-details-card {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    padding: 25px;
+
+    margin-bottom: 20px;
+
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+}
+
+.job-details-card h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.job-details-card h3 {
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.job-details-card p {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+
+/* ================= JOB INFORMATION ================= */
+
+.job-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.job-info-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+
+    padding-bottom: 12px;
+
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.job-info-item:last-child {
+    border-bottom: none;
+}
+
+.job-info-item strong {
+    color: #374151;
+    font-size: 13px;
+}
+
+.job-info-item span {
+    color: #64748b;
+    font-size: 13px;
+    text-align: right;
+}
+
+
+/* ================= REQUIRED SKILLS ================= */
+
+.job-details-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    margin-top: 12px;
+}
+
+.job-details-skill {
+    padding: 7px 10px;
+
+    background: #eff6ff;
+    color: #2563eb;
+
+    border-radius: 7px;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* ================= MATCH SCORE ================= */
+
+.match-score-box {
+    padding: 18px;
+
+    background: #ecfdf5;
+
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+
+    margin-bottom: 18px;
+}
+
+.match-score-box h3 {
+    color: #047857;
+    margin-bottom: 5px;
+}
+
+.match-score {
+    color: #047857;
+
+    font-size: 30px;
+    font-weight: 800;
+}
+
+
+/* ================= ACTION BUTTONS ================= */
+
+.job-detail-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.job-detail-actions button {
+    width: 100%;
+}
+
+.secondary-button {
+    background: #eef2ff;
+    color: #3730a3;
+}
+
+.secondary-button:hover {
+    background: #e0e7ff;
+}
+
+
+/* ================= ATS SECTION ================= */
+
+#atsSection {
+    margin-top: 20px;
+}
+
+.ats-card {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    padding: 25px;
+
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+}
+
+.ats-card h2 {
+    font-size: 20px;
+    margin-bottom: 7px;
+}
+
+.ats-card > p {
+    color: #64748b;
+    font-size: 14px;
+
+    margin-bottom: 18px;
+}
+
+
+/* ================= ATS RESULT ================= */
+
+.ats-result {
+    margin-top: 18px;
+
+    padding: 18px;
+
+    background: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.ats-score {
+    font-size: 30px;
+    font-weight: 800;
+
+    color: #2563eb;
+
+    margin-bottom: 10px;
+}
+
+.ats-missing {
+    margin-top: 15px;
+}
+
+.ats-missing strong {
+    display: block;
+
+    color: #374151;
+    font-size: 13px;
+
+    margin-bottom: 7px;
+}
+
+.ats-missing ul {
+    padding-left: 20px;
+
+    color: #64748b;
+    font-size: 13px;
+}
+
+.ats-suggestion {
+    margin-top: 15px;
+
+    padding: 12px;
+
+    background: #eff6ff;
+
+    border-radius: 8px;
+
+    color: #1e40af;
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+/* ================= JOB DETAILS RESPONSIVE ================= */
+
+@media (max-width: 800px) {
+
+    .job-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .job-details-container {
+        width: 92%;
+        margin: 25px auto;
+    }
+
+    .job-details-header {
+        padding: 23px;
+    }
+
+    .job-details-header h1 {
+        font-size: 25px;
+    }
+
+    .job-details-card,
+    .ats-card {
+        padding: 20px;
+    }
+
+    .job-info-item {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .job-info-item span {
+        text-align: left;
+    }
+
+}

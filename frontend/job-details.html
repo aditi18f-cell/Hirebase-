@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Job Details - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/job-details.css" />
+  </head>
+
+  <body>
+    <!-- ================= HEADER ================= -->
+
+    <header class="app-header">
+      <a href="job-seeker-dashboard.html" class="app-logo">
+        Hire<span>base</span>
+      </a>
+
+      <nav class="app-nav">
+        <a href="job-seeker-dashboard.html">Dashboard</a>
+        <a href="search-jobs.html" class="active">Find Jobs</a>
+        <a href="saved-jobs.html">Saved Jobs</a>
+        <a href="profile.html">My Profile</a>
+        <a href="login.html" onclick="localStorage.clear()">Logout</a>
+      </nav>
+    </header>
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="job-details-page">
+
+      <!-- Page heading -->
+
+      <section class="job-details-header">
+        <div>
+          <p class="job-details-label">JOB OPPORTUNITY</p>
+
+          <h1>Job Details</h1>
+
+          <p>
+            Review the opportunity and check how well your resume matches it.
+          </p>
+        </div>
+
+        <a href="search-jobs.html" class="back-jobs-link">
+          ← Back to Jobs
+        </a>
+      </section>
+
+
+      <!-- ================= MESSAGE ================= -->
+
+      <div id="message"></div>
+
+
+      <!-- ================= JOB DETAILS ================= -->
+
+      <section class="job-details-card">
+
+        <div id="jobDetails">
+          <!-- Job details will be displayed here dynamically -->
+        </div>
+
+        <div class="job-action-area">
+
+          <button id="saveJobBtn">
+            💾 Save Job
+          </button>
+
+          <button id="applyJobBtn">
+            📩 Apply Now
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <!-- ================= ATS ================= -->
+
+      <section id="atsSection" class="ats-card">
+
+        <div class="ats-header">
+
+          <div class="ats-icon">
+            📊
+          </div>
+
+          <div>
+
+            <p class="section-label">
+              RESUME ANALYSIS
+            </p>
+
+            <h2>
+              ATS Resume Score
+            </h2>
+
+            <p>
+              Check how well your resume matches the requirements of this job.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="ats-action">
+
+          <button id="checkAtsBtn">
+            Check ATS Score
+          </button>
+
+        </div>
+
+
+        <div id="atsResult">
+          <!-- ATS result will be displayed here dynamically -->
+        </div>
+
+      </section>
+
+
+      <!-- ================= SKILL GAP INFO ================= -->
+
+      <section class="job-feature-info">
+
+        <div class="job-feature-item">
+
+          <div class="job-feature-icon">
+            🎯
+          </div>
+
+          <div>
+
+            <h3>
+              Skill Gap Analysis
+            </h3>
+
+            <p>
+              Compare your skills with the skills required for this job from
+              your Profile page.
+            </p>
+
+            <a href="profile.html">
+              Check Skill Gap →
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <div class="job-feature-item">
+
+          <div class="job-feature-icon">
+            🤖
+          </div>
+
+          <div>
+
+            <h3>
+              Smart Job Matching
+            </h3>
+
+            <p>
+              Hirebase uses your resume and job requirements to calculate a
+              match percentage.
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer class="app-footer">
+
+      <div>
+
+        <strong>
+          Hire<span>base</span>
+        </strong>
+
+        <p>
+          Smart job portal with career tools.
+        </p>
+
+      </div>
+
+      <p>
+        © 2026 Hirebase
+      </p>
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+  </body>
+</html>

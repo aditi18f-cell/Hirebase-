@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Register - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/auth.css" />
+
+    <style>
+      .register-type {
+        display: flex;
+        gap: 15px;
+        margin: 20px 0;
+      }
+
+      .type-option {
+        flex: 1;
+        padding: 16px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        cursor: pointer;
+        text-align: center;
+        background: #fff;
+        transition: 0.2s;
+      }
+
+      .type-option:hover {
+        border-color: #2563eb;
+      }
+
+      .type-option input {
+        margin-right: 8px;
+      }
+
+      .type-option.active {
+        border-color: #2563eb;
+        background: #eff6ff;
+      }
+
+      .account-heading {
+        text-align: center;
+        margin-bottom: 8px;
+      }
+
+      .account-description {
+        text-align: center;
+        color: #666;
+        margin-bottom: 25px;
+      }
+
+      .company-section {
+        padding: 18px;
+        margin-top: 10px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+      }
+
+      .company-section h3 {
+        margin-top: 0;
+        color: #1e3a8a;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <h2 class="account-heading" id="registerHeading">
+        👤 Create Job Seeker Account
+      </h2>
+
+      <p class="account-description" id="registerDescription">
+        Create your account to find jobs and manage your profile.
+      </p>
+
+      <form id="registerForm">
+
+        <!-- ACCOUNT TYPE -->
+        <div class="form-group">
+          <label><strong>Account Type</strong></label>
+
+          <div class="register-type">
+
+            <label class="type-option active" id="jobSeekerOption">
+              <input
+                type="radio"
+                name="userType"
+                value="job_seeker"
+                checked
+              />
+              👤 Job Seeker
+            </label>
+
+            <label class="type-option" id="employerOption">
+              <input
+                type="radio"
+                name="userType"
+                value="employer"
+              />
+              🏢 Employer / Company
+            </label>
+
+          </div>
+        </div>
+
+
+        <!-- FULL NAME -->
+        <div class="form-group">
+          <label for="fullName" id="fullNameLabel">
+            Full Name:
+          </label>
+
+          <input
+            type="text"
+            id="fullName"
+            name="fullName"
+            required
+          />
+        </div>
+
+
+        <!-- EMAIL -->
+        <div class="form-group">
+
+          <label for="email">
+            Email:
+          </label>
+
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+          />
+
+        </div>
+
+
+        <!-- PASSWORD -->
+        <div class="form-group">
+
+          <label for="password">
+            Password:
+          </label>
+
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+          />
+
+        </div>
+
+
+        <!-- PHONE -->
+        <div class="form-group">
+
+          <label for="phone">
+            Phone:
+          </label>
+
+          <input
+            type="text"
+            id="phone"
+            name="phone"
+          />
+
+        </div>
+
+
+        <!-- ADDRESS -->
+        <div class="form-group">
+
+          <label for="address">
+            Address:
+          </label>
+
+          <textarea
+            id="address"
+            name="address"
+          ></textarea>
+
+        </div>
+
+
+        <!-- COMPANY INFORMATION -->
+        <div
+          id="companySection"
+          class="company-section"
+          style="display: none;"
+        >
+
+          <h3>🏢 Company Information</h3>
+
+          <div id="companyNameGroup" class="form-group">
+
+            <label for="companyName">
+              Company Name:
+            </label>
+
+            <input
+              type="text"
+              id="companyName"
+              name="companyName"
+            />
+
+          </div>
+
+
+          <div id="websiteGroup" class="form-group">
+
+            <label for="website">
+              Company Website:
+            </label>
+
+            <input
+              type="url"
+              id="website"
+              name="website"
+              placeholder="https://example.com"
+            />
+
+          </div>
+
+        </div>
+
+
+        <!-- REGISTER BUTTON -->
+        <button type="submit" id="registerButton">
+          👤 Register as Job Seeker
+        </button>
+
+      </form>
+
+
+      <!-- MESSAGE -->
+      <p id="message"></p>
+
+
+      <!-- LOGIN -->
+      <p>
+        <a href="login.html">
+          Already have an account? Login here
+        </a>
+      </p>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+
+    <!-- REGISTRATION UI -->
+    <script>
+
+      const jobSeekerRadio =
+        document.querySelector(
+          'input[name="userType"][value="job_seeker"]'
+        );
+
+      const employerRadio =
+        document.querySelector(
+          'input[name="userType"][value="employer"]'
+        );
+
+      const companySection =
+        document.getElementById("companySection");
+
+      const fullNameLabel =
+        document.getElementById("fullNameLabel");
+
+      const registerHeading =
+        document.getElementById("registerHeading");
+
+      const registerDescription =
+        document.getElementById("registerDescription");
+
+      const registerButton =
+        document.getElementById("registerButton");
+
+      const jobSeekerOption =
+        document.getElementById("jobSeekerOption");
+
+      const employerOption =
+        document.getElementById("employerOption");
+
+      const companyName =
+        document.getElementById("companyName");
+
+
+      function updateRegistrationForm() {
+
+        if (employerRadio.checked) {
+
+          /* COMPANY */
+
+          companySection.style.display = "block";
+
+          companyName.required = true;
+
+          fullNameLabel.textContent =
+            "Contact Person Name:";
+
+          registerHeading.textContent =
+            "🏢 Create Company Account";
+
+          registerDescription.textContent =
+            "Register your company to post jobs and find suitable candidates.";
+
+          registerButton.textContent =
+            "🏢 Register Company";
+
+          jobSeekerOption.classList.remove("active");
+
+          employerOption.classList.add("active");
+
+        } else {
+
+          /* JOB SEEKER */
+
+          companySection.style.display = "none";
+
+          companyName.required = false;
+
+          fullNameLabel.textContent =
+            "Full Name:";
+
+          registerHeading.textContent =
+            "👤 Create Job Seeker Account";
+
+          registerDescription.textContent =
+            "Create your account to find jobs and manage your profile.";
+
+          registerButton.textContent =
+            "👤 Register as Job Seeker";
+
+          employerOption.classList.remove("active");
+
+          jobSeekerOption.classList.add("active");
+
+        }
+
+      }
+
+
+      jobSeekerRadio.addEventListener(
+        "change",
+        updateRegistrationForm
+      );
+
+      employerRadio.addEventListener(
+        "change",
+        updateRegistrationForm
+      );
+
+
+      updateRegistrationForm();
+
+    </script>
+
+  </body>
+</html>

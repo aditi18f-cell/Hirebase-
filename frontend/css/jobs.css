@@ -1,0 +1,314 @@
+/* =========================================================
+   HIREBASE - FIND JOBS
+   ========================================================= */
+
+
+/* ================= SEARCH PAGE ================= */
+
+.jobs-page {
+    width: 90%;
+    max-width: 1100px;
+
+    margin: 40px auto;
+}
+
+
+/* ================= PAGE HEADER ================= */
+
+.jobs-header {
+    margin-bottom: 28px;
+}
+
+.jobs-label {
+    margin-bottom: 8px;
+
+    color: #2563eb;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    letter-spacing: 1px;
+}
+
+.jobs-header h1 {
+    margin-bottom: 8px;
+
+    color: #111827;
+
+    font-size: 34px;
+    line-height: 1.2;
+}
+
+.jobs-header p {
+    color: #64748b;
+
+    font-size: 15px;
+}
+
+
+/* ================= SEARCH BOX ================= */
+
+.search-box {
+    padding: 22px;
+
+    margin-bottom: 25px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+}
+
+.search-box label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #374151;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.search-row {
+    display: flex;
+
+    gap: 10px;
+}
+
+.search-row input {
+    flex: 1;
+}
+
+.search-row button {
+    flex-shrink: 0;
+}
+
+
+/* ================= SMART MATCHING INFO ================= */
+
+.matching-info {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 18px;
+
+    margin-bottom: 28px;
+
+    background: #eff6ff;
+
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+}
+
+.matching-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    background: #ffffff;
+
+    border-radius: 9px;
+
+    font-size: 20px;
+}
+
+.matching-info h2 {
+    margin-bottom: 3px;
+
+    color: #1e3a8a;
+
+    font-size: 16px;
+}
+
+.matching-info p {
+    color: #64748b;
+
+    font-size: 13px;
+}
+
+
+/* ================= JOBS HEADER ================= */
+
+.jobs-list-header {
+    margin-bottom: 16px;
+}
+
+.jobs-list-header h2 {
+    margin-bottom: 5px;
+
+    font-size: 22px;
+}
+
+.jobs-list-header p {
+    color: #64748b;
+
+    font-size: 14px;
+}
+
+
+/* ================= JOB LIST ================= */
+
+#jobListings {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 18px;
+}
+
+
+/* ================= JOB CARD ================= */
+
+.job-card {
+    padding: 22px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+
+    transition: 0.2s ease;
+}
+
+.job-card:hover {
+    border-color: #bfdbfe;
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.07);
+}
+
+.job-card h3 {
+    margin-bottom: 12px;
+
+    color: #111827;
+
+    font-size: 19px;
+}
+
+.job-card p {
+    margin-bottom: 9px;
+
+    color: #64748b;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+.job-card p strong {
+    color: #374151;
+}
+
+.job-card a {
+    display: inline-block;
+
+    margin-top: 8px;
+
+    color: #2563eb;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    text-decoration: none;
+}
+
+.job-card a:hover {
+    text-decoration: underline;
+}
+
+
+/* ================= MATCH SCORE ================= */
+
+.job-card p:last-of-type span {
+    display: inline-block;
+
+    padding: 5px 9px;
+
+    margin-left: 4px;
+
+    background: #ecfdf5;
+    color: #047857;
+
+    border-radius: 6px;
+
+    font-size: 12px;
+    font-weight: 800;
+}
+
+
+/* ================= JOB LIST MESSAGE ================= */
+
+#jobListings > p {
+    grid-column: 1 / -1;
+
+    padding: 25px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+
+    color: #64748b;
+
+    text-align: center;
+
+    font-size: 14px;
+}
+
+
+/* ================= ERROR ================= */
+
+.error {
+    color: #b91c1c !important;
+}
+
+
+/* ================= SEARCH PAGE RESPONSIVE ================= */
+
+@media (max-width: 800px) {
+
+    .jobs-page {
+        width: 92%;
+
+        margin: 30px auto;
+    }
+
+    #jobListings {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .jobs-header h1 {
+        font-size: 28px;
+    }
+
+    .search-row {
+        flex-direction: column;
+    }
+
+    .search-row button {
+        width: 100%;
+    }
+
+    .matching-info {
+        align-items: flex-start;
+    }
+
+}

@@ -1,0 +1,430 @@
+/* =========================================================
+   HIREBASE - JOB SEEKER DASHBOARD
+   ========================================================= */
+
+
+/* ================= MAIN DASHBOARD ================= */
+
+.dashboard-page {
+    width: 90%;
+    max-width: 1100px;
+    margin: 40px auto;
+}
+
+
+/* ================= WELCOME SECTION ================= */
+
+.dashboard-welcome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 30px;
+
+    padding: 32px;
+
+    margin-bottom: 25px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.05);
+}
+
+.dashboard-label {
+    margin-bottom: 8px;
+
+    color: #2563eb;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    letter-spacing: 1px;
+}
+
+.dashboard-welcome h1 {
+    margin-bottom: 8px;
+
+    font-size: 32px;
+    line-height: 1.2;
+}
+
+.dashboard-welcome h1 span {
+    color: #2563eb;
+}
+
+.dashboard-welcome p:last-child {
+    color: #64748b;
+
+    font-size: 15px;
+}
+
+
+/* ================= PRIMARY BUTTON ================= */
+
+.dashboard-primary-button {
+    flex-shrink: 0;
+
+    padding: 12px 20px;
+
+    background: #2563eb;
+    color: #ffffff;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    text-decoration: none;
+}
+
+.dashboard-primary-button:hover {
+    background: #1d4ed8;
+
+    text-decoration: none;
+}
+
+
+/* ================= QUICK STATS ================= */
+
+.dashboard-stats {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 18px;
+
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 22px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+}
+
+.stat-icon {
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    background: #eff6ff;
+
+    border-radius: 10px;
+
+    font-size: 21px;
+}
+
+.stat-number {
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: #172033;
+
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.stat-title {
+    display: block;
+
+    color: #64748b;
+
+    font-size: 13px;
+}
+
+
+/* ================= DASHBOARD SECTIONS ================= */
+
+.dashboard-section {
+    margin-bottom: 32px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 16px;
+}
+
+.section-title h2 {
+    margin-bottom: 5px;
+
+    font-size: 22px;
+}
+
+.section-title p {
+    color: #64748b;
+
+    font-size: 14px;
+}
+
+
+/* ================= QUICK ACTIONS ================= */
+
+.action-grid {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 16px;
+}
+
+.action-card {
+    display: flex;
+    align-items: center;
+
+    gap: 16px;
+
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+
+    color: #172033;
+
+    text-decoration: none;
+
+    transition: 0.2s ease;
+}
+
+.action-card:hover {
+    border-color: #93c5fd;
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
+
+    text-decoration: none;
+}
+
+.action-icon {
+    width: 44px;
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    background: #eff6ff;
+
+    border-radius: 10px;
+
+    font-size: 20px;
+}
+
+.action-card h3 {
+    margin-bottom: 5px;
+
+    font-size: 16px;
+}
+
+.action-card p {
+    color: #64748b;
+
+    font-size: 13px;
+}
+
+.action-arrow {
+    margin-left: auto;
+
+    color: #2563eb;
+
+    font-size: 20px;
+    font-weight: 700;
+}
+
+
+/* ================= WORKFLOW ================= */
+
+.workflow-grid {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 15px;
+}
+
+.workflow-card {
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.03);
+}
+
+.workflow-number {
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 12px;
+
+    background: #eff6ff;
+    color: #2563eb;
+
+    border-radius: 50%;
+
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.workflow-card h3 {
+    margin-bottom: 6px;
+
+    font-size: 15px;
+}
+
+.workflow-card p {
+    color: #64748b;
+
+    font-size: 13px;
+}
+
+
+/* ================= DASHBOARD CTA ================= */
+
+.dashboard-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 25px;
+
+    padding: 28px;
+
+    background: #172033;
+
+    border-radius: 15px;
+
+    color: #ffffff;
+}
+
+.dashboard-cta h2 {
+    margin-bottom: 6px;
+
+    color: #ffffff;
+
+    font-size: 22px;
+}
+
+.dashboard-cta p {
+    color: #cbd5e1;
+
+    font-size: 14px;
+}
+
+.dashboard-cta a {
+    flex-shrink: 0;
+
+    padding: 11px 18px;
+
+    background: #2563eb;
+    color: #ffffff;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    text-decoration: none;
+}
+
+.dashboard-cta a:hover {
+    background: #1d4ed8;
+
+    text-decoration: none;
+}
+
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 900px) {
+
+    .dashboard-welcome {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .workflow-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .dashboard-page {
+        width: 92%;
+
+        margin: 25px auto;
+    }
+
+    .dashboard-welcome {
+        padding: 24px;
+    }
+
+    .dashboard-welcome h1 {
+        font-size: 26px;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .workflow-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-cta {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .dashboard-primary-button {
+        width: 100%;
+
+        text-align: center;
+    }
+
+}

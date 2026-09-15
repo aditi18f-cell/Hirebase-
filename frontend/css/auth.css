@@ -1,0 +1,289 @@
+/* =========================================================
+   HIREBASE - LOGIN / REGISTER
+   ========================================================= */
+
+
+/* ================= AUTH PAGE ================= */
+
+.auth-page {
+    min-height: 100vh;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 70px;
+
+    align-items: center;
+
+    padding: 60px 8%;
+
+    background: #f5f7fb;
+}
+
+
+/* ================= AUTH INFORMATION ================= */
+
+.auth-info {
+    max-width: 540px;
+}
+
+.auth-logo {
+    color: #172033;
+    font-size: 28px;
+    font-weight: 800;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 30px;
+}
+
+.auth-logo span {
+    color: #2563eb;
+}
+
+.auth-info h1 {
+    font-size: 42px;
+    line-height: 1.15;
+    margin-bottom: 18px;
+}
+
+.auth-info > p {
+    color: #64748b;
+    font-size: 16px;
+    line-height: 1.7;
+    margin-bottom: 25px;
+}
+
+
+/* ================= AUTH FEATURES ================= */
+
+.auth-features {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.auth-feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    color: #374151;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.auth-feature::before {
+    content: "✓";
+
+    width: 25px;
+    height: 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #dbeafe;
+    color: #2563eb;
+
+    border-radius: 50%;
+
+    font-size: 13px;
+    font-weight: 800;
+}
+
+
+/* ================= AUTH CARD ================= */
+
+.auth-card {
+    width: 100%;
+    max-width: 470px;
+
+    margin: 0 auto;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+
+    padding: 35px;
+
+    box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08);
+}
+
+.auth-card-header {
+    margin-bottom: 25px;
+}
+
+.auth-card-header h2 {
+    font-size: 26px;
+    margin-bottom: 7px;
+}
+
+.auth-card-header p {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+
+/* ================= ROLE OPTIONS ================= */
+
+.radio-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+
+    margin-bottom: 20px;
+}
+
+.radio-card {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    padding: 12px;
+
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.radio-card:hover {
+    border-color: #93c5fd;
+    background: #f8fbff;
+}
+
+.radio-card input {
+    width: auto;
+    margin: 0;
+    box-shadow: none;
+}
+
+
+/* ================= AUTH BUTTON ================= */
+
+.auth-button {
+    width: 100%;
+    margin-top: 8px;
+
+    padding: 13px 18px;
+}
+
+
+/* ================= AUTH DIVIDER ================= */
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin: 25px 0;
+
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+
+    height: 1px;
+    flex: 1;
+
+    background: #e5e7eb;
+}
+
+
+/* ================= REGISTER LINK ================= */
+
+.auth-register {
+    text-align: center;
+
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.auth-register a {
+    font-weight: 700;
+}
+
+
+/* ================= BACK HOME ================= */
+
+.back-home {
+    display: block;
+
+    margin-top: 18px;
+
+    text-align: center;
+
+    color: #64748b;
+    font-size: 13px;
+}
+
+.back-home:hover {
+    color: #2563eb;
+}
+
+
+/* ================= AUTH RESPONSIVE ================= */
+
+@media (max-width: 1000px) {
+
+    .auth-page {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        padding: 45px 6%;
+    }
+
+    .auth-info {
+        max-width: 650px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .auth-features {
+        align-items: center;
+    }
+
+    .auth-card {
+        max-width: 500px;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .auth-page {
+        padding: 35px 20px;
+        gap: 30px;
+    }
+
+    .auth-info h1 {
+        font-size: 30px;
+    }
+
+    .auth-logo {
+        margin-bottom: 20px;
+    }
+
+    .auth-card {
+        padding: 25px 20px;
+        border-radius: 14px;
+    }
+
+    .auth-card-header h2 {
+        font-size: 23px;
+    }
+
+    .radio-options {
+        grid-template-columns: 1fr;
+    }
+
+}

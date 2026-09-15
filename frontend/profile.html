@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>My Profile - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/profile.css" />
+  </head>
+
+  <body>
+    <!-- ================= HEADER ================= -->
+
+    <header class="app-header">
+      <a href="job-seeker-dashboard.html" class="app-logo">
+        Hire<span>base</span>
+      </a>
+
+      <nav class="app-nav">
+        <a href="job-seeker-dashboard.html">Dashboard</a>
+        <a href="search-jobs.html">Find Jobs</a>
+        <a href="saved-jobs.html">Saved Jobs</a>
+        <a href="profile.html" class="active">My Profile</a>
+        <a href="login.html" onclick="localStorage.clear()">Logout</a>
+      </nav>
+    </header>
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="profile-page">
+      <!-- Page heading -->
+
+      <section class="profile-header">
+        <div>
+          <p class="profile-label">YOUR PROFILE</p>
+
+          <h1>My Profile</h1>
+
+          <p>
+            Manage your information, resume and skills for better job matching.
+          </p>
+        </div>
+
+        <a href="search-jobs.html" class="profile-find-button">
+          🔎 Find Jobs
+        </a>
+      </section>
+
+      <!-- ================= MESSAGE ================= -->
+
+      <div id="message"></div>
+
+      <!-- ================= PROFILE INFORMATION ================= -->
+
+      <section class="profile-card">
+        <div class="profile-card-header">
+          <div class="profile-card-icon">👤</div>
+
+          <div>
+            <p class="section-label">PROFILE INFORMATION</p>
+
+            <h2>Professional Profile</h2>
+
+            <p>Add your education, experience and technical skills.</p>
+          </div>
+        </div>
+
+        <form id="profileForm">
+          <input type="hidden" id="jobSeekerId" name="jobSeekerId" />
+
+          <div class="profile-form-grid">
+            <!-- Education -->
+
+            <div class="profile-field">
+              <label for="education"> Education </label>
+
+              <textarea
+                id="education"
+                name="education"
+                rows="4"
+                placeholder="Example: B.Tech Computer Science, MCA..."
+              ></textarea>
+
+              <span> Add your educational qualifications. </span>
+            </div>
+
+            <!-- Experience -->
+
+            <div class="profile-field">
+              <label for="experience"> Experience </label>
+
+              <textarea
+                id="experience"
+                name="experience"
+                rows="4"
+                placeholder="Example: Java Developer Intern, Web Development..."
+              ></textarea>
+
+              <span> Add your work experience or internships. </span>
+            </div>
+          </div>
+
+          <!-- Skills -->
+
+          <div class="profile-field">
+            <label for="skills"> Technical Skills </label>
+
+            <textarea
+              id="skills"
+              name="skills"
+              rows="4"
+              placeholder="Example: Java, Python, MySQL, HTML, CSS"
+            ></textarea>
+
+            <span> Enter skills separated by commas. </span>
+          </div>
+
+          <div class="profile-save-area">
+            <button type="submit">Save Profile</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ================= RESUME ================= -->
+
+      <section class="profile-card resume-card">
+        <div class="profile-card-header">
+          <div class="profile-card-icon">📄</div>
+
+          <div>
+            <p class="section-label">RESUME</p>
+
+            <h2>Manage Your Resume</h2>
+
+            <p>
+              Upload your PDF or DOCX resume for job matching and ATS analysis.
+            </p>
+          </div>
+        </div>
+
+        <div class="resume-upload-area">
+          <label for="resumeFile"> Choose Resume </label>
+
+          <input type="file" id="resumeFile" accept=".pdf,.docx" />
+
+          <button type="button" id="uploadResumeButton">
+            📤 Upload Resume
+          </button>
+        </div>
+
+        <div id="resumeMessage"></div>
+
+        <div id="resumeInfo"></div>
+      </section>
+
+      <!-- ================= SKILL GAP ================= -->
+
+      <section class="profile-card skill-gap-card">
+        <div class="profile-card-header">
+          <div class="profile-card-icon">🧠</div>
+
+          <div>
+            <p class="section-label">CAREER TOOL</p>
+
+            <h2>Skill Gap Analysis</h2>
+
+            <p>Compare your skills with the skills required for a job.</p>
+          </div>
+        </div>
+
+        <div class="skill-gap-form">
+          <label for="requiredSkills"> Required Job Skills </label>
+
+          <textarea
+            id="requiredSkills"
+            rows="3"
+            placeholder="Example: Java, Python, MySQL, HTML"
+          ></textarea>
+
+          <span>
+            Enter the skills required for the job you want to compare.
+          </span>
+
+          <button type="button" id="checkSkillGapButton">
+            🎯 Check Skill Gap
+          </button>
+        </div>
+
+        <div id="skillGapResult"></div>
+      </section>
+
+      <!-- ================= CAREER TOOLS ================= -->
+
+      <section class="profile-tools">
+        <div class="profile-tool">
+          <div class="profile-tool-icon">📊</div>
+
+          <div>
+            <h3>ATS Resume Score</h3>
+
+            <p>Check your resume against a specific job's requirements.</p>
+
+            <a href="search-jobs.html"> Check ATS Score → </a>
+          </div>
+        </div>
+
+        <div class="profile-tool">
+          <div class="profile-tool-icon">🤖</div>
+
+          <div>
+            <h3>Smart Job Matching</h3>
+
+            <p>Find jobs that match your resume and skills.</p>
+
+            <a href="search-jobs.html"> Find Matching Jobs → </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer class="app-footer">
+      <div>
+        <strong> Hire<span>base</span> </strong>
+
+        <p>Smart job portal with career tools.</p>
+      </div>
+
+      <p>© 2026 Hirebase</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

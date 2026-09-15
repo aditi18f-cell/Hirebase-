@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Login - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/auth.css" />
+  </head>
+
+  <body>
+    <div class="auth-page">
+      <!-- Left Side -->
+      <div class="auth-info">
+        <a href="../index.html" class="auth-logo"> Hire<span>base</span> </a>
+
+        <h1>
+          Welcome back to
+          <span>Hirebase</span>
+        </h1>
+
+        <p>
+          Find better opportunities, connect with employers, and use smart tools
+          to improve your career.
+        </p>
+
+        <div class="auth-features">
+          <div class="auth-feature">
+            <span>✓</span>
+            Smart job matching
+          </div>
+
+          <div class="auth-feature">
+            <span>✓</span>
+            ATS resume analysis
+          </div>
+
+          <div class="auth-feature">
+            <span>✓</span>
+            Skill gap analysis
+          </div>
+        </div>
+      </div>
+
+      <!-- Login Card -->
+      <div class="auth-card">
+        <div class="auth-card-header">
+          <h2>Login</h2>
+
+          <p>Sign in to continue to your Hirebase account.</p>
+        </div>
+
+        <div id="message"></div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="email"> Email Address </label>
+
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password"> Password </label>
+
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+
+          <div class="login-type">
+            <p class="login-type-title">Login as</p>
+
+            <div class="radio-options">
+              <label class="radio-card">
+                <input
+                  type="radio"
+                  name="userType"
+                  value="job_seeker"
+                  checked
+                />
+
+                <span> Job Seeker </span>
+              </label>
+
+              <label class="radio-card">
+                <input type="radio" name="userType" value="employer" />
+
+                <span> Employer </span>
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="auth-button">Login</button>
+        </form>
+
+        <div class="auth-divider">
+          <span>OR</span>
+        </div>
+
+        <p class="auth-register">
+          Don't have an account?
+
+          <a href="register.html"> Create an account </a>
+        </p>
+
+        <a href="../index.html" class="back-home"> ← Back to Hirebase </a>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
