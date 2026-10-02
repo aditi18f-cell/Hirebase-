@@ -335,6 +335,13 @@ public class ApplicationRoutes {
                             request.params(":jobId")
                     );
 
+            String employerIdValue = request.queryParams("employerId");
+            if (employerIdValue == null || employerIdValue.isBlank()) {
+                response.status(400);
+                return gson.toJson(Map.of("success", false, "message", "Employer ID is required."));
+            }
+            int employerId = Integer.parseInt(employerIdValue);
+
 
             Connection conn =
                     DbConnect.getConnection();
@@ -346,13 +353,16 @@ public class ApplicationRoutes {
                     "a.application_date, " +
                     "a.status, " +
                     "js.id AS job_seeker_id, " +
-                    "js.name, " +
+                    "js.full_name AS applicant_name, " +
                     "js.email, " +
-                    "a.resume_id " +
+                    "a.resume_id, " +
+                    "r.resume_file_name " +
                     "FROM applications a " +
                     "JOIN job_seeker js " +
                     "ON a.job_seeker_id = js.id " +
-                    "WHERE a.job_id = ? " +
+                    "JOIN jobs j ON a.job_id = j.id " +
+                    "LEFT JOIN resumes r ON a.resume_id = r.id " +
+                    "WHERE a.job_id = ? AND j.employer_id = ? " +
                     "ORDER BY a.application_date DESC";
 
 
@@ -360,6 +370,7 @@ public class ApplicationRoutes {
                     conn.prepareStatement(sql);
 
             pstmt.setInt(1, jobId);
+            pstmt.setInt(2, employerId);
 
 
             ResultSet rs =
@@ -393,7 +404,7 @@ public class ApplicationRoutes {
 
                 applicant.put(
                         "name",
-                        rs.getString("name")
+                        rs.getString("applicant_name")
                 );
 
                 applicant.put(
@@ -404,6 +415,11 @@ public class ApplicationRoutes {
                 applicant.put(
                         "resumeId",
                         rs.getInt("resume_id")
+                );
+
+                applicant.put(
+                        "resumeFileName",
+                        rs.getString("resume_file_name")
                 );
 
 
@@ -464,6 +480,7 @@ public class ApplicationRoutes {
 
             String status =
                     data.get("status").getAsString();
+            int employerId = data.get("employerId").getAsInt();
 
 
             if (!status.equals("Applied")
@@ -487,9 +504,10 @@ public class ApplicationRoutes {
 
 
             String sql =
-                    "UPDATE applications " +
-                    "SET status = ? " +
-                    "WHERE id = ?";
+                    "UPDATE applications a " +
+                    "JOIN jobs j ON a.job_id = j.id " +
+                    "SET a.status = ? " +
+                    "WHERE a.id = ? AND j.employer_id = ?";
 
 
             PreparedStatement pstmt =
@@ -498,6 +516,7 @@ public class ApplicationRoutes {
 
             pstmt.setString(1, status);
             pstmt.setInt(2, applicationId);
+            pstmt.setInt(3, employerId);
 
 
             int rows =

@@ -1,0 +1,10 @@
+# Maven build output
+/target/
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+
+# Local resume uploads and test document
+/uploads/resumes/
+/hirebaseTestResume.docx.docx

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/dashboard.css" />
+      <link rel="stylesheet" href="css/polish.css" />
   </head>
 
   <body>
@@ -99,7 +100,7 @@
             <div>
               <h3>Find Jobs</h3>
 
-              <p>Search available jobs and see your resume match percentage.</p>
+              <p>Compare the wording in your resume with job descriptions as a relevance hint.</p>
             </div>
 
             <span class="action-arrow">→</span>
@@ -133,9 +134,9 @@
             <div class="action-icon">📊</div>
 
             <div>
-              <h3>ATS Score</h3>
+              <h3>Resume alignment estimate</h3>
 
-              <p>Check how well your resume matches a selected job.</p>
+              <p>Review detected job terms and resume sections for a selected job.</p>
             </div>
 
             <span class="action-arrow">→</span>
@@ -209,9 +210,22 @@
             <h3>Improve Your Resume</h3>
 
             <p>
-              Use ATS scoring and skill-gap analysis to improve your chances.
+              Use the keyword estimate and skill comparison to review your materials before applying.
             </p>
           </div>
+        </div>
+      </section>
+
+      <section class="dashboard-section application-updates" aria-labelledby="applicationUpdatesTitle">
+        <div class="section-title">
+          <div>
+            <p class="dashboard-label">APPLICATION UPDATES</p>
+            <h2 id="applicationUpdatesTitle">Your applications</h2>
+            <p>We’ll show an update here when an employer reviews your application.</p>
+          </div>
+        </div>
+        <div id="applicationUpdates" aria-live="polite">
+          <p>Loading your applications…</p>
         </div>
       </section>
 
@@ -246,5 +260,6 @@
         document.getElementById("dashboardUserName").textContent = userName;
       }
     </script>
+    <script src="script.js"></script>
   </body>
 </html>

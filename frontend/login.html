@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/auth.css" />
+      <link rel="stylesheet" href="css/polish.css" />
   </head>
 
   <body>
@@ -22,8 +23,8 @@
         </h1>
 
         <p>
-          Find better opportunities, connect with employers, and use smart tools
-          to improve your career.
+          Pick up where you left off: explore roles, keep your profile current,
+          and follow the applications you have sent.
         </p>
 
         <div class="auth-features">
@@ -49,7 +50,7 @@
         <div class="auth-card-header">
           <h2>Login</h2>
 
-          <p>Sign in to continue to your Hirebase account.</p>
+          <p>Sign in with the email you used to create your account.</p>
         </div>
 
         <div id="message"></div>
@@ -79,28 +80,7 @@
             />
           </div>
 
-          <div class="login-type">
-            <p class="login-type-title">Login as</p>
-
-            <div class="radio-options">
-              <label class="radio-card">
-                <input
-                  type="radio"
-                  name="userType"
-                  value="job_seeker"
-                  checked
-                />
-
-                <span> Job Seeker </span>
-              </label>
-
-              <label class="radio-card">
-                <input type="radio" name="userType" value="employer" />
-
-                <span> Employer </span>
-              </label>
-            </div>
-          </div>
+          <p class="login-hint">We’ll open the right account for you.</p>
 
           <button type="submit" class="auth-button">Login</button>
         </form>

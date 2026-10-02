@@ -33,6 +33,18 @@ public class JobSeekerRoutes {
 
             // Insert into database
             Connection conn = DbConnect.getConnection();
+            try (PreparedStatement existingEmployer = conn.prepareStatement(
+                    "SELECT id FROM employer WHERE email = ?")) {
+                existingEmployer.setString(1, email);
+                try (ResultSet existing = existingEmployer.executeQuery()) {
+                    if (existing.next()) {
+                        conn.close();
+                        response.status(409);
+                        return gson.toJson(Map.of("success", false,
+                                "message", "This email is already linked to an employer account. Sign in with that account or use another email."));
+                    }
+                }
+            }
             String sql = "INSERT INTO job_seeker (full_name, email, password, phone, address) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement pstmt = conn.prepareStatement(sql);
 

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/profile.css" />
+      <link rel="stylesheet" href="css/polish.css" />
   </head>
 
   <body>
@@ -40,7 +41,7 @@
           <h1>My Profile</h1>
 
           <p>
-            Manage your information, resume and skills for better job matching.
+            Keep your experience and skills up to date so you can find roles that fit.
           </p>
         </div>
 
@@ -64,7 +65,7 @@
 
             <h2>Professional Profile</h2>
 
-            <p>Add your education, experience and technical skills.</p>
+            <p>Give employers a clear picture of what you have studied and done.</p>
           </div>
         </div>
 
@@ -136,7 +137,7 @@
             <h2>Manage Your Resume</h2>
 
             <p>
-              Upload your PDF or DOCX resume for job matching and ATS analysis.
+              Upload a PDF or DOCX resume to compare your experience with open roles.
             </p>
           </div>
         </div>
@@ -156,42 +157,6 @@
         <div id="resumeInfo"></div>
       </section>
 
-      <!-- ================= SKILL GAP ================= -->
-
-      <section class="profile-card skill-gap-card">
-        <div class="profile-card-header">
-          <div class="profile-card-icon">🧠</div>
-
-          <div>
-            <p class="section-label">CAREER TOOL</p>
-
-            <h2>Skill Gap Analysis</h2>
-
-            <p>Compare your skills with the skills required for a job.</p>
-          </div>
-        </div>
-
-        <div class="skill-gap-form">
-          <label for="requiredSkills"> Required Job Skills </label>
-
-          <textarea
-            id="requiredSkills"
-            rows="3"
-            placeholder="Example: Java, Python, MySQL, HTML"
-          ></textarea>
-
-          <span>
-            Enter the skills required for the job you want to compare.
-          </span>
-
-          <button type="button" id="checkSkillGapButton">
-            🎯 Check Skill Gap
-          </button>
-        </div>
-
-        <div id="skillGapResult"></div>
-      </section>
-
       <!-- ================= CAREER TOOLS ================= -->
 
       <section class="profile-tools">
@@ -199,11 +164,11 @@
           <div class="profile-tool-icon">📊</div>
 
           <div>
-            <h3>ATS Resume Score</h3>
+            <h3>Resume alignment estimate</h3>
 
-            <p>Check your resume against a specific job's requirements.</p>
+            <p>Open a job page to compare your uploaded resume with its description and listed skills.</p>
 
-            <a href="search-jobs.html"> Check ATS Score → </a>
+            <a href="search-jobs.html">Choose a job to review</a>
           </div>
         </div>
 
@@ -211,9 +176,9 @@
           <div class="profile-tool-icon">🤖</div>
 
           <div>
-            <h3>Smart Job Matching</h3>
+            <h3>Resume text similarity</h3>
 
-            <p>Find jobs that match your resume and skills.</p>
+            <p>Compare resume wording with job descriptions as a relevance hint.</p>
 
             <a href="search-jobs.html"> Find Matching Jobs → </a>
           </div>

@@ -24,6 +24,7 @@ public class App {
 
         // ==================== AUTHENTICATION ====================
 
+        post("/login", AuthenticationRoutes::login);
         post("/register-job-seeker", JobSeekerRoutes.registerJobSeeker);
         post("/login-job-seeker", JobSeekerRoutes.loginJobSeeker);
 
@@ -60,6 +61,7 @@ public class App {
         post("/upload-resume", ResumeRoutes::uploadResume);
         get("/resume/:jobSeekerId", ResumeRoutes::getResume);
         delete("/delete-resume/:resumeId", ResumeRoutes::deleteResume);
+        get("/application-resume/:resumeId", ResumeRoutes::downloadApplicationResume);
 
 
         // ==================== APPLICATIONS ====================

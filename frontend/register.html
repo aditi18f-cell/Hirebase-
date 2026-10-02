@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Register - Hirebase</title>
+    <title>Create your account - Hirebase</title>
 
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/auth.css" />
@@ -64,25 +64,44 @@
         color: #1e3a8a;
       }
     </style>
+      <link rel="stylesheet" href="css/polish.css" />
   </head>
 
-  <body>
+  <body class="register-page">
 
-    <div class="container">
+    <header class="register-topbar">
+      <a class="register-brand" href="../index.html" aria-label="Hirebase home">Hirebase<span>.</span></a>
+      <p>Already have an account? <a href="login.html">Sign in</a></p>
+    </header>
+
+    <main class="register-layout">
+      <section class="register-intro" aria-labelledby="registerIntroTitle">
+        <p class="register-eyebrow">A better way to move forward</p>
+        <h1 id="registerIntroTitle">Make your next move count.</h1>
+        <p class="register-lede">Build a thoughtful profile, find the right opportunities, and keep every application in one place.</p>
+        <ul class="register-benefits">
+          <li>Discover roles that fit your experience</li>
+          <li>Track applications from one workspace</li>
+          <li>Connect with teams looking for your skills</li>
+        </ul>
+      </section>
+
+    <div class="container register-card">
+      <p class="register-step">GET STARTED</p>
 
       <h2 class="account-heading" id="registerHeading">
-        👤 Create Job Seeker Account
+        Create your account
       </h2>
 
       <p class="account-description" id="registerDescription">
-        Create your account to find jobs and manage your profile.
+        Set up your profile and find opportunities that fit your goals.
       </p>
 
       <form id="registerForm">
 
         <!-- ACCOUNT TYPE -->
         <div class="form-group">
-          <label><strong>Account Type</strong></label>
+          <label><strong>I am here as a</strong></label>
 
           <div class="register-type">
 
@@ -93,7 +112,8 @@
                 value="job_seeker"
                 checked
               />
-              👤 Job Seeker
+              <span class="role-title">Job seeker</span>
+              <span class="role-description">Find roles and manage applications</span>
             </label>
 
             <label class="type-option" id="employerOption">
@@ -102,7 +122,8 @@
                 name="userType"
                 value="employer"
               />
-              🏢 Employer / Company
+              <span class="role-title">Employer</span>
+              <span class="role-description">Post jobs and meet candidates</span>
             </label>
 
           </div>
@@ -196,7 +217,7 @@
           style="display: none;"
         >
 
-          <h3>🏢 Company Information</h3>
+          <h3>Company information</h3>
 
           <div id="companyNameGroup" class="form-group">
 
@@ -233,7 +254,7 @@
 
         <!-- REGISTER BUTTON -->
         <button type="submit" id="registerButton">
-          👤 Register as Job Seeker
+          Create job seeker account
         </button>
 
       </form>
@@ -244,13 +265,14 @@
 
 
       <!-- LOGIN -->
-      <p>
+      <p class="register-login-link">
         <a href="login.html">
           Already have an account? Login here
         </a>
       </p>
 
     </div>
+    </main>
 
 
     <script src="script.js"></script>
@@ -308,13 +330,13 @@
             "Contact Person Name:";
 
           registerHeading.textContent =
-            "🏢 Create Company Account";
+            "Create your employer account";
 
           registerDescription.textContent =
-            "Register your company to post jobs and find suitable candidates.";
+            "Create an employer profile to post roles and review applications.";
 
           registerButton.textContent =
-            "🏢 Register Company";
+            "Create employer account";
 
           jobSeekerOption.classList.remove("active");
 
@@ -332,13 +354,13 @@
             "Full Name:";
 
           registerHeading.textContent =
-            "👤 Create Job Seeker Account";
+            "Create your account";
 
           registerDescription.textContent =
-            "Create your account to find jobs and manage your profile.";
+            "Set up your profile and start exploring relevant roles.";
 
           registerButton.textContent =
-            "👤 Register as Job Seeker";
+            "Create job seeker account";
 
           employerOption.classList.remove("active");
 

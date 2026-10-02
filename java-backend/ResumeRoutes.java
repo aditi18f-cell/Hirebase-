@@ -44,6 +44,66 @@ public class ResumeRoutes {
         post("/upload-resume", ResumeRoutes::uploadResume);
         get("/resume/:jobSeekerId", ResumeRoutes::getResume);
         delete("/delete-resume/:resumeId", ResumeRoutes::deleteResume);
+        get("/application-resume/:resumeId", ResumeRoutes::downloadApplicationResume);
+    }
+
+    public static Object downloadApplicationResume(Request request, Response response) {
+        try {
+            int resumeId = Integer.parseInt(request.params(":resumeId"));
+            String employerIdValue = request.queryParams("employerId");
+            if (employerIdValue == null || employerIdValue.isBlank()) {
+                response.status(400);
+                return "Employer ID is required.";
+            }
+            int employerId = Integer.parseInt(employerIdValue);
+
+            String sql = "SELECT r.storage_file_name, r.resume_file_name "
+                    + "FROM resumes r "
+                    + "JOIN applications a ON a.resume_id = r.id "
+                    + "JOIN jobs j ON j.id = a.job_id "
+                    + "WHERE r.id = ? AND j.employer_id = ?";
+
+            try (Connection connection = DbConnect.getConnection()) {
+                if (connection == null) {
+                    response.status(500);
+                    return "Database connection failed.";
+                }
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setInt(1, resumeId);
+                    statement.setInt(2, employerId);
+                    try (ResultSet result = statement.executeQuery()) {
+                        if (!result.next()) {
+                            response.status(404);
+                            return "Resume not found.";
+                        }
+
+                        String storedName = result.getString("storage_file_name");
+                        String originalName = result.getString("resume_file_name");
+                        if (storedName == null || !storedName.matches("[a-fA-F0-9-]+\\.(pdf|docx)")) {
+                            response.status(404);
+                            return "Resume file is unavailable.";
+                        }
+                        Path file = UPLOAD_DIRECTORY.resolve(storedName).normalize();
+                        if (!file.getParent().equals(UPLOAD_DIRECTORY.normalize()) || !Files.isRegularFile(file)) {
+                            response.status(404);
+                            return "Resume file is unavailable.";
+                        }
+
+                        response.raw().setContentType(storedName.toLowerCase().endsWith(".pdf")
+                                ? "application/pdf"
+                                : "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+                        String safeName = originalName == null ? "resume" : originalName.replaceAll("[\\r\\n\\\"]", "_");
+                        response.raw().setHeader("Content-Disposition", "inline; filename=\"" + safeName + "\"");
+                        response.raw().setContentLengthLong(Files.size(file));
+                        Files.copy(file, response.raw().getOutputStream());
+                        return response.raw();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            response.status(500);
+            return "Unable to load the resume.";
+        }
     }
 
     public static Object uploadResume(Request request, Response response) {
@@ -232,9 +292,10 @@ public class ResumeRoutes {
             String sql = "INSERT INTO resumes "
                     + "(job_seeker_id, "
                     + "resume_file_name, "
+                    + "storage_file_name, "
                     + "upload_date, "
                     + "resume_text) "
-                    + "VALUES (?, ?, CURRENT_TIMESTAMP, ?)";
+                    + "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)";
 
             try (Connection connection = DbConnect.getConnection()) {
 
@@ -271,6 +332,10 @@ public class ResumeRoutes {
 
                     statement.setString(
                             3,
+                            storedFileName);
+
+                    statement.setString(
+                            4,
                             resumeText);
 
                     statement.executeUpdate();
@@ -296,7 +361,9 @@ public class ResumeRoutes {
 
                     result.addProperty(
                             "message",
-                            "Resume uploaded successfully.");
+                            resumeText == null || resumeText.isBlank()
+                                    ? "Resume saved, but no selectable text could be read. Use a text-based PDF or DOCX for resume analysis."
+                                    : "Resume uploaded and text extracted successfully.");
 
                     result.addProperty(
                             "resumeId",
@@ -469,9 +536,10 @@ public class ResumeRoutes {
             /*
              * Find the resume record first.
              */
-            String selectSql = "SELECT resume_file_name "
+            String selectSql = "SELECT storage_file_name "
                     + "FROM resumes "
                     + "WHERE id = ?";
+            String fileName = null;
 
             try (Connection connection = DbConnect.getConnection()) {
 
@@ -492,8 +560,6 @@ public class ResumeRoutes {
                     return gson.toJson(result);
                 }
 
-                String fileName = null;
-
                 try (PreparedStatement statement = connection.prepareStatement(
                         selectSql)) {
 
@@ -506,7 +572,7 @@ public class ResumeRoutes {
                         if (resultSet.next()) {
 
                             fileName = resultSet.getString(
-                                    "resume_file_name");
+                                    "storage_file_name");
                         }
                     }
                 }
@@ -545,12 +611,12 @@ public class ResumeRoutes {
                 }
             }
 
-            /*
-             * The database stores the original file name,
-             * while the physical uploaded file uses a UUID.
-             *
-             * Therefore, the physical file is not deleted here.
-             */
+            if (fileName != null && !fileName.isBlank()) {
+                Path storedFile = UPLOAD_DIRECTORY.resolve(fileName).normalize();
+                if (storedFile.getParent().equals(UPLOAD_DIRECTORY.normalize())) {
+                    Files.deleteIfExists(storedFile);
+                }
+            }
             JsonObject result = new JsonObject();
 
             result.addProperty(

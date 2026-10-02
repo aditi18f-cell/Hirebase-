@@ -30,6 +30,18 @@ public class EmployerRoutes {
             String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));
 
             Connection conn = DbConnect.getConnection();
+            try (PreparedStatement existingJobSeeker = conn.prepareStatement(
+                    "SELECT id FROM job_seeker WHERE email = ?")) {
+                existingJobSeeker.setString(1, email);
+                try (ResultSet existing = existingJobSeeker.executeQuery()) {
+                    if (existing.next()) {
+                        conn.close();
+                        response.status(409);
+                        return gson.toJson(Map.of("success", false,
+                                "message", "This email is already linked to a job seeker account. Sign in with that account or use another email."));
+                    }
+                }
+            }
             String sql = "INSERT INTO employer (company_name, email, password, phone, address, website) VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement pstmt = conn.prepareStatement(sql);
 

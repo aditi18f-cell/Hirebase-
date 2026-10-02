@@ -3,6 +3,16 @@
 const JAVA_API = "http://localhost:4567";
 const ML_API = "http://localhost:5000";
 
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
+}
+
 // ==================== POST JOB BUTTON ====================
 
 const postJobBtn = document.getElementById("postJobBtn");
@@ -96,14 +106,14 @@ if (registerForm) {
       if (result.success) {
 
         messageDiv.innerHTML =
-          `<p class="success">${result.message}</p>`;
+          `<p class="success">${escapeHtml(result.message)}</p>`;
 
         this.reset();
 
       } else {
 
         messageDiv.innerHTML =
-          `<p class="error">${result.message}</p>`;
+          `<p class="error">${escapeHtml(result.message)}</p>`;
       }
 
 
@@ -144,35 +154,10 @@ if (loginForm) {
     }
 
 
-    const selectedUserType =
-      document.querySelector(
-        'input[name="userType"]:checked'
-      );
-
-
-    if (!selectedUserType) {
-
-      document.getElementById("message").innerHTML =
-        '<p class="error">Please select Job Seeker or Employer.</p>';
-
-      return;
-    }
-
-
-    const userType =
-      selectedUserType.value;
-
-
-    const loginUrl =
-      userType === "job_seeker"
-        ? `${JAVA_API}/login-job-seeker`
-        : `${JAVA_API}/login-employer`;
-
-
     try {
 
       const response =
-        await fetch(loginUrl, {
+        await fetch(`${JAVA_API}/login`, {
 
           method: "POST",
 
@@ -191,12 +176,13 @@ if (loginForm) {
 
       const messageDiv =
         document.getElementById("message");
+      const userType = result.userType;
 
 
       if (result.success) {
 
         messageDiv.innerHTML =
-          `<p class="success">${result.message}</p>`;
+          `<p class="success">${escapeHtml(result.message)}</p>`;
 
 
         localStorage.setItem(
@@ -263,7 +249,7 @@ if (loginForm) {
       } else {
 
         messageDiv.innerHTML =
-          `<p class="error">${result.message}</p>`;
+          `<p class="error">${escapeHtml(result.message)}</p>`;
       }
 
 
@@ -352,6 +338,19 @@ if (profileForm) {
       jobSeekerId || "";
   }
 
+  if (jobSeekerId) {
+    fetch(`${JAVA_API}/profile-job-seeker/${encodeURIComponent(jobSeekerId)}`)
+      .then((response) => response.json())
+      .then((result) => {
+        if (result.success) {
+          document.getElementById("education").value = result.education || "";
+          document.getElementById("experience").value = result.experience || "";
+          document.getElementById("skills").value = result.skills || "";
+        }
+      })
+      .catch((error) => console.error("Profile loading error:", error));
+  }
+
 
   profileForm.addEventListener(
     "submit",
@@ -423,12 +422,12 @@ if (profileForm) {
         if (result.success) {
 
           messageDiv.innerHTML =
-            `<p class="success">${result.message}</p>`;
+            `<p class="success">${escapeHtml(result.message)}</p>`;
 
         } else {
 
           messageDiv.innerHTML =
-            `<p class="error">${result.message}</p>`;
+            `<p class="error">${escapeHtml(result.message)}</p>`;
         }
 
 
@@ -518,12 +517,12 @@ if (uploadResumeButton) {
 
             <p>
               <strong>Resume:</strong>
-              ${result.fileName}
+              ${escapeHtml(result.fileName)}
             </p>
 
             <p>
               <strong>Upload Date:</strong>
-              ${result.uploadDate}
+              ${escapeHtml(result.uploadDate)}
             </p>
 
             <button
@@ -638,7 +637,7 @@ if (uploadResumeButton) {
         if (result.success) {
 
           resumeMessage.innerHTML =
-            `<p class="success">${result.message}</p>`;
+            `<p class="success">${escapeHtml(result.message)}</p>`;
 
 
           resumeFile.value = "";
@@ -650,7 +649,7 @@ if (uploadResumeButton) {
         } else {
 
           resumeMessage.innerHTML =
-            `<p class="error">${result.message}</p>`;
+            `<p class="error">${escapeHtml(result.message)}</p>`;
         }
 
 
@@ -691,7 +690,7 @@ if (uploadResumeButton) {
         if (result.success) {
 
           resumeMessage.innerHTML =
-            `<p class="success">${result.message}</p>`;
+            `<p class="success">${escapeHtml(result.message)}</p>`;
 
 
           await loadResume();
@@ -700,7 +699,7 @@ if (uploadResumeButton) {
         } else {
 
           resumeMessage.innerHTML =
-            `<p class="error">${result.message}</p>`;
+            `<p class="error">${escapeHtml(result.message)}</p>`;
         }
 
 
@@ -829,57 +828,16 @@ if (checkSkillGapButton) {
 
 
         if (response.ok) {
-
-          let missingHTML = "";
-
-
-          if (
-            result.missing_skills &&
-            result.missing_skills.length > 0
-          ) {
-
-            missingHTML = `
-
-              <h3>
-                Missing Skills
-              </h3>
-
-              <ul>
-
-                ${result.missing_skills
-                  .map(
-                    (skill) =>
-                      `<li>${skill}</li>`
-                  )
-                  .join("")}
-
-              </ul>
-
-            `;
-
-          } else {
-
-            missingHTML =
-              "<p>No missing skills. Great!</p>";
-          }
-
-
+          const renderSkills = (skills, kind) => skills.length
+            ? `<ul class="analysis-chips ${kind}">${skills.map((skill) => `<li>${escapeHtml(skill)}</li>`).join("")}</ul>`
+            : '<p class="analysis-empty">None identified</p>';
           skillGapResult.innerHTML = `
-
-            ${missingHTML}
-
-            <p>
-              <strong>Suggestion:</strong>
-              ${result.suggestion}
-            </p>
-
-          `;
-
-
+            <div class="analysis-summary"><strong>${result.coverage}%</strong><span>of listed job skills appear on your profile (${result.matched_count}/${result.required_count})</span></div>
+            <h3>Skills you already list</h3>${renderSkills(result.matched_skills || [], "matched")}
+            <h3>Skills not listed</h3>${renderSkills(result.missing_skills || [], "missing")}
+            <p class="analysis-note">${escapeHtml(result.suggestion)}</p>`;
         } else {
-
-          skillGapResult.innerHTML =
-            '<p class="error">Unable to check skill gap.</p>';
+          skillGapResult.innerHTML = `<p class="error">${escapeHtml(result.error || "Unable to compare these skills.")}</p>`;
         }
 
 
@@ -1033,7 +991,7 @@ if (jobForm) {
         if (result.success) {
 
           messageDiv.innerHTML =
-            `<p class="success">${result.message}</p>`;
+            `<p class="success">${escapeHtml(result.message)}</p>`;
 
 
           jobForm.reset();
@@ -1049,7 +1007,7 @@ if (jobForm) {
         } else {
 
           messageDiv.innerHTML =
-            `<p class="error">${result.message}</p>`;
+            `<p class="error">${escapeHtml(result.message)}</p>`;
         }
 
 
@@ -1181,7 +1139,7 @@ if (searchForm && jobListings) {
 
       for (const job of jobs) {
 
-        let matchScore = 0;
+        let matchScore = null;
 
 
         if (resumeText) {
@@ -1259,38 +1217,38 @@ if (searchForm && jobListings) {
         jobCard.innerHTML = `
 
           <h3>
-            ${job.jobTitle || "Job"}
+            ${escapeHtml(job.jobTitle || "Job")}
           </h3>
 
           <p>
             <strong>Company:</strong>
-            ${job.companyName || "N/A"}
+            ${escapeHtml(job.companyName || "N/A")}
           </p>
 
           <p>
-            ${job.jobDescription || ""}
+            ${escapeHtml(job.jobDescription || "")}
           </p>
 
           <p>
             <strong>Location:</strong>
-            ${job.location || "N/A"}
+            ${escapeHtml(job.location || "N/A")}
           </p>
 
           <p>
             <strong>Required Skills:</strong>
-            ${job.requiredSkills || "N/A"}
+            ${escapeHtml(job.requiredSkills || "N/A")}
           </p>
 
           <p>
-            <strong>Match:</strong>
+            <strong>Resume text similarity:</strong>
 
             <span class="match-badge">
-              ${matchScore}%
+              ${matchScore === null ? "Add a resume to compare" : `${Number(matchScore).toFixed(1)}%`}
             </span>
           </p>
 
           <a
-            href="job-details.html?id=${job.id}"
+            href="job-details.html?id=${encodeURIComponent(job.id)}"
             class="job-link">
             View Job
           </a>
@@ -1406,7 +1364,7 @@ if (jobDetails) {
 
       const response =
         await fetch(
-          `${JAVA_API}/job-details/${jobId}`
+          `${JAVA_API}/job-details/${encodeURIComponent(jobId)}`
         );
 
 
@@ -1425,21 +1383,44 @@ if (jobDetails) {
 
       currentJob = result;
 
+      const featureInfo = document.querySelector(".job-feature-info");
+      if (featureInfo) {
+        featureInfo.innerHTML = `
+          <article class="job-feature-item" id="jobSkillGapSection">
+            <div class="job-feature-icon">SKILLS</div>
+            <div>
+              <h3>Compare your skills with this role</h3>
+              <p>We compare skills saved on your profile with the skills listed in this job. This is guidance, not a hiring decision.</p>
+              <button type="button" id="checkJobSkillGapBtn">Compare my skills</button>
+              <div id="jobSkillGapResult" aria-live="polite"></div>
+            </div>
+          </article>
+          <article class="job-feature-item">
+            <div class="job-feature-icon">MATCH</div>
+            <div>
+              <h3>Resume text similarity</h3>
+              <p>Search results compare wording in your resume with each job description. It is a relevance hint, not a prediction of hiring success.</p>
+            </div>
+          </article>`;
+
+        document.getElementById("checkJobSkillGapBtn").addEventListener("click", compareJobSkills);
+      }
+
 
       jobDetails.innerHTML = `
 
         <h2>
-          ${result.jobTitle || "Job"}
+          ${escapeHtml(result.jobTitle || "Job")}
         </h2>
 
         <p>
           <strong>Company:</strong>
-          ${result.companyName || "N/A"}
+          ${escapeHtml(result.companyName || "N/A")}
         </p>
 
         <p>
           <strong>Location:</strong>
-          ${result.location || "N/A"}
+          ${escapeHtml(result.location || "N/A")}
         </p>
 
         <p>
@@ -1449,7 +1430,7 @@ if (jobDetails) {
 
         <p>
           <strong>Job Type:</strong>
-          ${result.jobType || "N/A"}
+          ${escapeHtml(result.jobType || "N/A")}
         </p>
 
         <p>
@@ -1460,12 +1441,12 @@ if (jobDetails) {
 
         <p>
           <strong>Required Skills:</strong>
-          ${result.requiredSkills || "N/A"}
+          ${escapeHtml(result.requiredSkills || "N/A")}
         </p>
 
         <p>
           <strong>Job Description:</strong>
-          ${result.jobDescription || "N/A"}
+          ${escapeHtml(result.jobDescription || "N/A")}
         </p>
 
       `;
@@ -1483,6 +1464,52 @@ if (jobDetails) {
         '<p class="error">Error loading job details.</p>';
     }
 
+  }
+
+  async function compareJobSkills() {
+    const resultBox = document.getElementById("jobSkillGapResult");
+    const button = document.getElementById("checkJobSkillGapBtn");
+    const jobSeekerId = localStorage.getItem("jobSeekerId");
+    if (!jobSeekerId) {
+      resultBox.innerHTML = '<p class="error">Sign in as a job seeker to compare your profile.</p>';
+      return;
+    }
+    if (!currentJob || !currentJob.requiredSkills) {
+      resultBox.innerHTML = '<p class="error">This job does not list required skills yet.</p>';
+      return;
+    }
+
+    button.disabled = true;
+    resultBox.innerHTML = '<p>Comparing your profile with this job…</p>';
+    try {
+      const profileResponse = await fetch(`${JAVA_API}/profile-job-seeker/${encodeURIComponent(jobSeekerId)}`);
+      const profile = await profileResponse.json();
+      if (!profileResponse.ok || !profile.success || !profile.skills || !profile.skills.trim()) {
+        resultBox.innerHTML = '<p>Add your skills to your profile first, then come back to compare.</p><a href="profile.html">Update my profile</a>';
+        return;
+      }
+
+      const response = await fetch(`${ML_API}/skill-gap`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ candidate_skills: profile.skills, required_skills: currentJob.requiredSkills })
+      });
+      const analysis = await response.json();
+      if (!response.ok) throw new Error(analysis.error || "Could not compare skills");
+
+      const chips = (items, kind) => items.length
+        ? `<ul class="analysis-chips ${kind}">${items.map((skill) => `<li>${escapeHtml(skill)}</li>`).join("")}</ul>`
+        : '<p class="analysis-empty">None identified</p>';
+      resultBox.innerHTML = `
+        <div class="analysis-summary"><strong>${analysis.coverage}%</strong><span>of listed skills appear on your profile (${analysis.matched_count}/${analysis.required_count})</span></div>
+        <h4>Skills on your profile</h4>${chips(analysis.matched_skills || [], "matched")}
+        <h4>Skills not listed on your profile</h4>${chips(analysis.missing_skills || [], "missing")}
+        <p class="analysis-note">${escapeHtml(analysis.suggestion)}</p>`;
+    } catch (error) {
+      resultBox.innerHTML = '<p class="error">Could not compare skills. Check that the Java and Python services are running.</p>';
+    } finally {
+      button.disabled = false;
+    }
   }
 
 
@@ -1548,8 +1575,8 @@ if (jobDetails) {
             "message"
           ).innerHTML =
             result.success
-              ? `<p class="success">${result.message}</p>`
-              : `<p class="error">${result.message}</p>`;
+              ? `<p class="success">${escapeHtml(result.message)}</p>`
+              : `<p class="error">${escapeHtml(result.message)}</p>`;
 
 
         } catch (error) {
@@ -1654,7 +1681,7 @@ if (jobDetails) {
             document.getElementById(
               "message"
             ).innerHTML =
-              `<p class="success">${result.message}</p>`;
+              `<p class="success">${escapeHtml(result.message)}</p>`;
 
 
             applyJobBtn.textContent =
@@ -1666,7 +1693,7 @@ if (jobDetails) {
             document.getElementById(
               "message"
             ).innerHTML =
-              `<p class="error">${result.message}</p>`;
+              `<p class="error">${escapeHtml(result.message)}</p>`;
 
 
             applyJobBtn.disabled =
@@ -1828,7 +1855,7 @@ if (jobDetails) {
                   ${atsData.suggestions
                     .map(
                       (suggestion) =>
-                        `<li>${suggestion}</li>`
+                        `<li>${escapeHtml(suggestion)}</li>`
                     )
                     .join("")}
 
@@ -1841,20 +1868,16 @@ if (jobDetails) {
             atsResult.innerHTML = `
 
               <div class="ats-result-card">
-
-                <h3>
-                  ATS Score:
-                  ${atsData.score}%
-                </h3>
-
-                <p>
-                  Your resume matches this
-                  job based on keywords and
-                  resume sections.
-                </p>
-
+                <div class="analysis-summary"><strong>${Number(atsData.score).toFixed(1)}%</strong><span>resume alignment estimate</span></div>
+                <p>This estimate checks job wording in your resume (80%) and common resume sections (20%). It is not an employer ATS result or a hiring prediction.</p>
+                <div class="analysis-breakdown"><span>Keyword coverage <strong>${Number(atsData.keyword_score || 0).toFixed(1)}%</strong></span><span>Resume sections <strong>${Number(atsData.section_score || 0).toFixed(1)}%</strong></span></div>
+                <h3>Terms found in your resume</h3>
+                ${atsData.matched_keywords && atsData.matched_keywords.length ? `<ul class="analysis-chips matched">${atsData.matched_keywords.map((term) => `<li>${escapeHtml(term)}</li>`).join("")}</ul>` : '<p class="analysis-empty">No detected job terms yet.</p>'}
+                <h3>Terms not found</h3>
+                ${atsData.missing_keywords && atsData.missing_keywords.length ? `<ul class="analysis-chips missing">${atsData.missing_keywords.map((term) => `<li>${escapeHtml(term)}</li>`).join("")}</ul>` : '<p class="analysis-empty">No missing terms detected.</p>'}
+                <p><strong>Resume sections found:</strong> ${escapeHtml((atsData.sections_found || []).join(", ") || "None detected")}</p>
                 ${suggestionsHTML}
-
+                <p class="analysis-note">${escapeHtml(atsData.score_note || "An estimate only. Review your resume and the role yourself.")}</p>
               </div>
 
             `;
@@ -2117,13 +2140,13 @@ if (employerProfileForm) {
         if (result.success) {
 
           messageDiv.innerHTML =
-            `<p class="success">${result.message}</p>`;
+            `<p class="success">${escapeHtml(result.message)}</p>`;
 
 
         } else {
 
           messageDiv.innerHTML =
-            `<p class="error">${result.message}</p>`;
+            `<p class="error">${escapeHtml(result.message)}</p>`;
         }
 
 
@@ -2146,4 +2169,136 @@ if (employerProfileForm) {
   // Load existing company profile
   loadEmployerProfile();
 
+}
+
+// ==================== APPLICATION REVIEW ====================
+
+const employerJobsContainer = document.getElementById("employerJobs");
+
+if (employerJobsContainer) {
+  const jobsList = document.getElementById("jobsList");
+  const employerId = localStorage.getItem("employerId");
+
+  async function loadEmployerApplications() {
+    if (!employerId) {
+      jobsList.innerHTML = '<p class="error">Sign in as an employer to review applications.</p>';
+      return;
+    }
+
+    try {
+      const jobsResponse = await fetch(`${JAVA_API}/employer-jobs/${encodeURIComponent(employerId)}`);
+      const jobsResult = await jobsResponse.json();
+      if (!jobsResponse.ok || !jobsResult.success) throw new Error("Could not load jobs");
+
+      const jobs = Object.values(jobsResult.jobs || {});
+      if (!jobs.length) {
+        jobsList.innerHTML = '<div class="empty-state"><h3>No jobs posted yet</h3><p>Your applications will appear here after you post a job.</p><a href="post-job.html">Post your first job</a></div>';
+        return;
+      }
+
+      jobsList.innerHTML = jobs.map((job) => `
+        <article class="job-card employer-job-card">
+          <div class="employer-job-heading">
+            <div><h3>${escapeHtml(job.jobTitle || "Job")}</h3><p>${escapeHtml(job.location || "Location not specified")} · ${escapeHtml(job.jobType || "Role")}</p></div>
+            <span class="applicant-count" data-count-for="${Number(job.id)}">Loading applicants</span>
+          </div>
+          <section class="applicant-list" aria-label="Applicants for ${escapeHtml(job.jobTitle || "job")}" data-applicants-for="${Number(job.id)}"><p>Checking for applications…</p></section>
+        </article>
+      `).join("");
+
+      await Promise.all(jobs.map(async (job) => {
+        const list = jobsList.querySelector(`[data-applicants-for="${Number(job.id)}"]`);
+        const count = jobsList.querySelector(`[data-count-for="${Number(job.id)}"]`);
+        try {
+          const response = await fetch(`${JAVA_API}/job-applicants/${encodeURIComponent(job.id)}?employerId=${encodeURIComponent(employerId)}`);
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error("Could not load applicants");
+          const applicants = result.applicants || [];
+          count.textContent = `${applicants.length} ${applicants.length === 1 ? "application" : "applications"}`;
+          list.innerHTML = applicants.length ? applicants.map((applicant) => {
+            const accepted = applicant.status === "Shortlisted";
+            const rejected = applicant.status === "Rejected";
+            const state = accepted ? "Accepted" : rejected ? "Rejected" : "Under review";
+            const resumeLink = applicant.resumeId
+              ? `<a class="resume-link" href="${JAVA_API}/application-resume/${encodeURIComponent(applicant.resumeId)}?employerId=${encodeURIComponent(employerId)}" target="_blank" rel="noopener">View resume · ${escapeHtml(applicant.resumeFileName || "Open file")}</a>`
+              : '<span class="resume-unavailable">Resume unavailable</span>';
+            const decisionControls = accepted || rejected
+              ? `<p class="decision-recorded">${accepted ? "You accepted this application." : "You declined this application."}</p>`
+              : `<div class="application-actions">
+                  <button type="button" data-application-decision="Shortlisted" data-application-id="${Number(applicant.applicationId)}">Accept</button>
+                  <button type="button" class="secondary-decision" data-application-decision="Rejected" data-application-id="${Number(applicant.applicationId)}">Reject</button>
+                </div>`;
+            return `<article class="applicant-card">
+              <div class="applicant-details"><div><h4>${escapeHtml(applicant.name || "Candidate")}</h4><a href="mailto:${encodeURIComponent(applicant.email || "")}">${escapeHtml(applicant.email || "")}</a></div><span class="application-status status-${state.toLowerCase()}">${state}</span></div>
+              <p class="application-date">Applied ${escapeHtml(applicant.applicationDate || "recently")}</p>
+              ${resumeLink}
+              ${decisionControls}
+            </article>`;
+          }).join("") : '<p class="empty-applicants">No applications yet. We’ll list new candidates here.</p>';
+        } catch (error) {
+          count.textContent = "Applications unavailable";
+          list.innerHTML = '<p class="error">Could not load applications. Try refreshing the page.</p>';
+        }
+      }));
+    } catch (error) {
+      jobsList.innerHTML = '<p class="error">Could not load your jobs. Check that the Java API is running.</p>';
+    }
+  }
+
+  jobsList.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-application-decision]");
+    if (!button) return;
+    button.disabled = true;
+    try {
+      const response = await fetch(`${JAVA_API}/application-status/${encodeURIComponent(button.dataset.applicationId)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: button.dataset.applicationDecision, employerId: Number(employerId) })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || "Update failed");
+      await loadEmployerApplications();
+    } catch (error) {
+      button.disabled = false;
+      window.alert("We couldn’t update this application. Please try again.");
+    }
+  });
+
+  loadEmployerApplications();
+  window.setInterval(loadEmployerApplications, 30000);
+}
+
+// Show employer decisions on the job seeker dashboard, and refresh while it is open.
+const applicationUpdates = document.getElementById("applicationUpdates");
+if (applicationUpdates) {
+  const jobSeekerId = localStorage.getItem("jobSeekerId");
+  async function loadApplicationUpdates() {
+    if (!jobSeekerId) {
+      applicationUpdates.innerHTML = '<p>Sign in as a job seeker to see your application updates.</p>';
+      return;
+    }
+    try {
+      const response = await fetch(`${JAVA_API}/applications/${encodeURIComponent(jobSeekerId)}`);
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error("Could not load updates");
+      const applications = result.applications || [];
+      applicationUpdates.innerHTML = applications.length ? applications.map((application) => {
+        const decided = application.status === "Shortlisted" || application.status === "Rejected";
+        const state = application.status === "Shortlisted" ? "Accepted" : application.status === "Rejected" ? "Not selected" : "Under review";
+        const updateText = application.status === "Shortlisted"
+          ? `Good news — ${escapeHtml(application.companyName)} would like to move forward with your application.`
+          : application.status === "Rejected"
+            ? `${escapeHtml(application.companyName)} has finished reviewing this application.`
+            : "Your application has been sent. We’ll show an update here when it’s reviewed.";
+        return `<article class="candidate-application ${decided ? "has-decision" : ""}">
+          <div><p class="application-company">${escapeHtml(application.companyName || "Employer")}</p><h3>${escapeHtml(application.jobTitle || "Job")}</h3><p>${escapeHtml(updateText)}</p></div>
+          <span class="application-status status-${state.toLowerCase().replaceAll(" ", "-")}">${state}</span>
+        </article>`;
+      }).join("") : '<p>You haven’t applied to any jobs yet. When you do, you can follow each application here.</p>';
+    } catch (error) {
+      applicationUpdates.innerHTML = '<p class="error">Your application updates couldn’t load. Please refresh the page.</p>';
+    }
+  }
+  loadApplicationUpdates();
+  window.setInterval(loadApplicationUpdates, 30000);
 }
