@@ -4,6 +4,7 @@ import pdfplumber
 import docx
 import os
 import re
+import threading
 import unicodedata
 from pathlib import Path
 
@@ -14,6 +15,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["http://localhost:8000", "http://127.0.0.1:8000"]}})
 RESUME_DIRECTORY = (Path(__file__).resolve().parent.parent / 'uploads' / 'resumes').resolve()
+SENTENCE_MODEL_NAME = os.environ.get(
+    'HIREBASE_EMBEDDING_MODEL',
+    'sentence-transformers/all-MiniLM-L6-v2'
+)
+_sentence_model = None
+_sentence_model_loaded = False
+_sentence_model_lock = threading.Lock()
 
 
 STOP_WORDS = {
@@ -198,6 +206,118 @@ def tfidf_similarity(resume_text, job_text):
     return (word_similarity * 0.8 + char_similarity * 0.2) * 100
 
 
+def split_evidence_sentences(text, limit=80):
+    """Keep readable source excerpts for explainable and semantic comparisons."""
+    sentences = []
+    for line in str(text or '').splitlines():
+        for sentence in re.split(r'(?<=[.!?])\s+', line):
+            excerpt = re.sub(r'^\s*(?:[-*•]+\s*)+', '', sentence).strip()
+            if len(excerpt) >= 16 and excerpt not in sentences:
+                sentences.append(excerpt[:500])
+            if len(sentences) >= limit:
+                return sentences
+    return sentences
+
+
+def get_sentence_model():
+    """Load a compact sentence-embedding model once, on the first analysis request."""
+    global _sentence_model, _sentence_model_loaded
+    if _sentence_model_loaded:
+        return _sentence_model
+
+    with _sentence_model_lock:
+        if _sentence_model_loaded:
+            return _sentence_model
+        _sentence_model_loaded = True
+        try:
+            from sentence_transformers import SentenceTransformer
+            _sentence_model = SentenceTransformer(SENTENCE_MODEL_NAME, device='cpu')
+        except Exception as error:
+            app.logger.warning(
+                'Sentence embeddings unavailable (%s). Falling back to TF-IDF for this run.',
+                error
+            )
+            _sentence_model = None
+    return _sentence_model
+
+
+def semantic_requirement_analysis(resume_text, job_text):
+    """Compare job sentences with resume sentences using local sentence embeddings."""
+    job_sentences = split_evidence_sentences(job_text, limit=40)
+    resume_sentences = split_evidence_sentences(resume_text, limit=80)
+    model = get_sentence_model()
+    empty_result = {
+        'available': False,
+        'model': SENTENCE_MODEL_NAME,
+        'score': None,
+        'matches': [],
+        'note': 'Sentence embeddings are unavailable; exact skill evidence and TF-IDF are still shown.'
+    }
+    if model is None or not job_sentences or not resume_sentences:
+        return empty_result
+
+    try:
+        embeddings = model.encode(
+            job_sentences + resume_sentences,
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+            show_progress_bar=False
+        )
+        job_vectors = embeddings[:len(job_sentences)]
+        resume_vectors = embeddings[len(job_sentences):]
+        similarities = cosine_similarity(job_vectors, resume_vectors)
+        matches = []
+        best_scores = []
+        for index, job_sentence in enumerate(job_sentences):
+            resume_index = int(similarities[index].argmax())
+            similarity = max(0.0, min(1.0, float(similarities[index][resume_index])))
+            best_scores.append(similarity)
+            status = 'matched' if similarity >= 0.48 else 'related' if similarity >= 0.30 else 'missing'
+            matches.append({
+                'job_requirement': job_sentence,
+                'resume_evidence': resume_sentences[resume_index] if status != 'missing' else None,
+                'similarity': round(similarity * 100, 1),
+                'status': status,
+                'explanation': (
+                    'Strongly related wording found in the resume.' if status == 'matched'
+                    else 'Possibly related wording found; verify that it supports this requirement.' if status == 'related'
+                    else 'No close sentence-level evidence was found in the extracted resume text.'
+                )
+            })
+
+        matches.sort(key=lambda item: item['similarity'], reverse=True)
+        score = (sum(best_scores) / len(best_scores) * 100) if best_scores else 0.0
+        return {
+            'available': True,
+            'model': SENTENCE_MODEL_NAME,
+            'score': round(score, 1),
+            'matches': matches[:12],
+            'note': 'Sentence-level semantic similarity finds related wording. Review each excerpt; it does not prove a skill or qualification.'
+        }
+    except Exception as error:
+        app.logger.warning('Sentence embedding comparison failed: %s', error)
+        empty_result['note'] = 'Sentence comparison failed; exact skill evidence and TF-IDF are still shown.'
+        return empty_result
+
+
+def exact_skill_evidence(resume_text, required_items):
+    """Return the resume sentences that explicitly support each required skill."""
+    resume_sentences = split_evidence_sentences(resume_text)
+    evidence = []
+    for key, label in required_items:
+        excerpts = [sentence for sentence in resume_sentences if contains_skill(sentence, key)][:3]
+        evidence.append({
+            'requirement': label,
+            'status': 'matched' if excerpts else 'missing',
+            'resume_evidence': excerpts,
+            'explanation': (
+                'The resume explicitly mentions this skill (including recognized aliases).' if excerpts
+                else 'No explicit mention was found. Related wording is shown separately and does not count as an exact skill match.'
+            )
+        })
+    return evidence
+
+
 def make_suggestion(priority, title, detail):
     return {'priority': priority, 'title': title, 'detail': detail}
 
@@ -265,12 +385,22 @@ def match_score():
 
         resume_text = canonicalize_analysis_text(resume_text)
         job_text = canonicalize_analysis_text(job_text)
-        score = round(tfidf_similarity(resume_text, job_text), 2)
+        tfidf_score = tfidf_similarity(resume_text, job_text)
+        semantic = semantic_requirement_analysis(resume_text, job_text)
+        score = round(
+            tfidf_score * .45 + semantic['score'] * .55
+            if semantic['available'] else tfidf_score,
+            2
+        )
 
         return jsonify({
             'score': score,
+            'tfidf_score': round(tfidf_score, 2),
+            'semantic_similarity': semantic['score'],
+            'semantic_available': semantic['available'],
+            'semantic_matches': semantic['matches'],
             'score_type': 'resume_job_text_similarity',
-            'score_note': 'Uses local TF-IDF word and character n-gram overlap as a relevance hint. It does not predict hiring success.'
+            'score_note': 'Combines TF-IDF overlap with sentence embeddings when available. It is a relevance hint, not a hiring prediction.'
         })
 
     except Exception as e:
@@ -297,6 +427,7 @@ def ats_score():
         required_items = list(required_skills.items())
         matched_skills = [label for key, label in required_items if contains_skill(resume_text, key)]
         missing_skills = [label for key, label in required_items if not contains_skill(resume_text, key)]
+        requirements_evidence = exact_skill_evidence(resume_text, required_items)
         skill_score = len(matched_skills) / len(required_items) * 100 if required_items else 0.0
 
         keywords = keyword_list(job_text)
@@ -316,6 +447,7 @@ def ats_score():
         sections_missing = [name for name in SECTION_PATTERNS if name not in sections_found]
         section_score = len(sections_found) / len(SECTION_PATTERNS) * 100
         text_similarity = tfidf_similarity(normalized_resume, normalized_job)
+        semantic = semantic_requirement_analysis(resume_text, job_text)
         word_count = len(re.findall(r'\b\w+\b', resume_text))
         quantified_lines = sum(
             bool(re.search(
@@ -335,13 +467,20 @@ def ats_score():
             'skill_coverage': round(skill_score, 1) if required_items else None,
             'keyword_coverage': round(keyword_score, 1),
             'text_similarity': round(text_similarity, 1),
+            'semantic_similarity': semantic['score'],
             'resume_structure': round(section_score, 1),
         }
-        if required_items:
-            weights = {'skill_coverage': 45, 'keyword_coverage': 25, 'text_similarity': 20, 'resume_structure': 10}
+        if semantic['available'] and required_items:
+            weights = {'skill_coverage': 40, 'keyword_coverage': 25, 'text_similarity': 15, 'semantic_similarity': 10, 'resume_structure': 10}
+            final_score = skill_score * .40 + keyword_score * .25 + text_similarity * .15 + semantic['score'] * .10 + section_score * .10
+        elif semantic['available']:
+            weights = {'skill_coverage': 0, 'keyword_coverage': 45, 'text_similarity': 25, 'semantic_similarity': 20, 'resume_structure': 10}
+            final_score = keyword_score * .45 + text_similarity * .25 + semantic['score'] * .20 + section_score * .10
+        elif required_items:
+            weights = {'skill_coverage': 45, 'keyword_coverage': 25, 'text_similarity': 20, 'semantic_similarity': 0, 'resume_structure': 10}
             final_score = skill_score * .45 + keyword_score * .25 + text_similarity * .20 + section_score * .10
         else:
-            weights = {'skill_coverage': 0, 'keyword_coverage': 50, 'text_similarity': 30, 'resume_structure': 20}
+            weights = {'skill_coverage': 0, 'keyword_coverage': 50, 'text_similarity': 30, 'semantic_similarity': 0, 'resume_structure': 20}
             final_score = keyword_score * .50 + text_similarity * .30 + section_score * .20
 
         suggestions = []
@@ -408,8 +547,8 @@ def ats_score():
             'score': score,
             'score_label': score_label,
             'score_type': 'resume_alignment_estimate',
-            'score_note': 'Local analysis combines scikit-learn TF-IDF word and character n-gram similarity, skill aliases, job keywords, and resume section signals. It is not a hiring prediction or an employer ATS result.',
-            'model': 'TF-IDF word and character n-grams with a curated skill alias map',
+            'score_note': 'This local estimate combines exact skill and keyword checks, TF-IDF, sentence embeddings when available, and resume structure signals. It is not a hiring prediction or an employer ATS result.',
+            'model': 'Sentence Transformers embeddings + scikit-learn TF-IDF + curated skill aliases' if semantic['available'] else 'scikit-learn TF-IDF + curated skill aliases (sentence embeddings unavailable)',
             'dimensions': dimensions,
             'weights': weights,
             'skill_score': round(skill_score, 1) if required_items else None,
@@ -419,6 +558,8 @@ def ats_score():
             'required_skills': [label for _, label in required_items],
             'matched_skills': matched_skills,
             'missing_skills': missing_skills,
+            'requirements_evidence': requirements_evidence,
+            'semantic_analysis': semantic,
             'matched_keywords': matched_keywords,
             'missing_keywords': missing_keywords,
             'sections_found': sections_found,
@@ -447,28 +588,61 @@ def skill_gap():
         data = request.get_json(silent=True) or {}
         candidate_skills = skill_list(data.get('candidate_skills', ''))
         required_skills = skill_list(data.get('required_skills', ''))
+        preferred_skills = skill_list(data.get('preferred_skills', ''))
 
-        if not candidate_skills or not required_skills:
-            return jsonify({'error': 'Provide your skills and the job skills to compare.'}), 400
+        if not required_skills and not preferred_skills:
+            return jsonify({'error': 'This job has no required or preferred skills to compare yet.'}), 400
 
         matched_keys = [key for key in required_skills if key in candidate_skills]
         missing_keys = [key for key in required_skills if key not in candidate_skills]
         matched_skills = [required_skills[key] for key in matched_keys]
         missing_skills = [required_skills[key] for key in missing_keys]
-        coverage = round(len(matched_keys) / len(required_skills) * 100, 1)
+        matched_preferred_keys = [key for key in preferred_skills if key in candidate_skills]
+        missing_preferred_keys = [key for key in preferred_skills if key not in candidate_skills]
+        matched_preferred = [preferred_skills[key] for key in matched_preferred_keys]
+        missing_preferred = [preferred_skills[key] for key in missing_preferred_keys]
+        coverage = round(len(matched_keys) / len(required_skills) * 100, 1) if required_skills else None
+        preferred_coverage = (
+            round(len(matched_preferred_keys) / len(preferred_skills) * 100, 1)
+            if preferred_skills else None
+        )
+
+        learning_plan = [
+            {
+                'skill': required_skills[key],
+                'category': 'required',
+                'priority': 'high',
+                'suggested_step': f'Build a small, verifiable project using {required_skills[key]} and add the outcome to your resume.'
+            }
+            for key in missing_keys
+        ] + [
+            {
+                'skill': preferred_skills[key],
+                'category': 'preferred',
+                'priority': 'medium',
+                'suggested_step': f'Explore {preferred_skills[key]} through a guided exercise or project if it fits your career goals.'
+            }
+            for key in missing_preferred_keys
+        ]
 
         suggestion = (
-            'All listed job skills are present in your profile.' if not missing_skills
-            else 'Review the missing skills and add them to your profile only if they reflect experience you can support.'
+            'All required skills are present in your profile.' if not missing_skills
+            else 'Start with required skills. Add a skill to your profile only after you have experience you can support.'
         )
 
         return jsonify({
             'coverage': coverage,
             'matched_skills': matched_skills,
             'missing_skills': missing_skills,
+            'preferred_coverage': preferred_coverage,
+            'matched_preferred_skills': matched_preferred,
+            'missing_preferred_skills': missing_preferred,
+            'learning_plan': learning_plan,
             'suggestion': suggestion,
             'required_count': len(required_skills),
-            'matched_count': len(matched_skills)
+            'matched_count': len(matched_skills),
+            'preferred_count': len(preferred_skills),
+            'matched_preferred_count': len(matched_preferred)
         })
 
     except Exception as e:

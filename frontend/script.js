@@ -48,9 +48,9 @@ function initializeAccountIdentity() {
     if (!appNav) return;
     const page = window.location.pathname.split("/").pop();
     const items = role === "job_seeker"
-      ? [["Dashboard", "job-seeker-dashboard.html"], ["Find Jobs", "search-jobs.html"], ["Saved Jobs", "saved-jobs.html"], ["My Profile", "profile.html?v=20261025-quality-pass"]]
+      ? [["Dashboard", "job-seeker-dashboard.html"], ["Find Jobs", "search-jobs.html"], ["Saved Jobs", "saved-jobs.html"], ["My Profile", "profile.html?v=20261025-learning-plan-v2"]]
       : role === "employer"
-        ? [["Dashboard", "employer-dashboard.html"], ["Post a Job", "post-job.html"], ["Company Profile", "employer-profile.html?v=20261025-quality-pass"]]
+        ? [["Dashboard", "employer-dashboard.html"], ["Post a Job", "post-job.html"], ["Company Profile", "employer-profile.html?v=20261025-learning-plan-v2"]]
         : [["Home", "../index.html"], ["Find Jobs", "search-jobs.html"], ["Login", "login.html"], ["Create Account", "register.html"]];
     const activePage = page === "job-details.html" ? "search-jobs.html" : page;
     appNav.innerHTML = items.map(([label, href]) =>
@@ -1059,6 +1059,9 @@ if (jobForm) {
             "requiredSkills"
           ).value,
 
+        preferredSkills:
+          document.getElementById("preferredSkills")?.value || "",
+
         location:
           document.getElementById(
             "location"
@@ -1369,7 +1372,12 @@ if (searchForm && jobListings) {
           </p>
 
           <p>
-            <strong>Resume text similarity:</strong>
+            <strong>Preferred Skills:</strong>
+            ${escapeHtml(job.preferredSkills || "None listed")}
+          </p>
+
+          <p>
+            <strong>Resume relevance estimate:</strong>
 
             <span class="match-badge">
               ${matchScore === null ? "Add a resume to compare" : `${Number(matchScore).toFixed(1)}%`}
@@ -1519,16 +1527,16 @@ if (jobDetails) {
             <div class="job-feature-icon">SKILLS</div>
             <div>
               <h3>Compare your skills with this role</h3>
-              <p>We compare skills saved on your profile with the skills listed in this job. This is guidance, not a hiring decision.</p>
-              <button type="button" id="checkJobSkillGapBtn">Compare my skills</button>
+              <p>Compare your profile with required and preferred skills, then build a job-specific learning checklist. Required gaps come first; preferred skills are optional.</p>
+              <button type="button" id="checkJobSkillGapBtn">Build my skill plan</button>
               <div id="jobSkillGapResult" aria-live="polite"></div>
             </div>
           </article>
           <article class="job-feature-item">
             <div class="job-feature-icon">MATCH</div>
             <div>
-              <h3>Resume text similarity</h3>
-              <p>Search results compare wording in your resume with each job description. It is a relevance hint, not a prediction of hiring success.</p>
+              <h3>Resume relevance matching</h3>
+              <p>Search results combine sentence meaning and exact wording from your resume with each job. It is a discovery hint, not a prediction of hiring success.</p>
             </div>
           </article>`;
 
@@ -1574,6 +1582,11 @@ if (jobDetails) {
         </p>
 
         <p>
+          <strong>Preferred Skills:</strong>
+          ${escapeHtml(result.preferredSkills || "None listed")}
+        </p>
+
+        <p>
           <strong>Job Description:</strong>
           ${escapeHtml(result.jobDescription || "N/A")}
         </p>
@@ -1603,8 +1616,8 @@ if (jobDetails) {
       resultBox.innerHTML = '<p class="error">Sign in as a job seeker to compare your profile.</p>';
       return;
     }
-    if (!currentJob || !currentJob.requiredSkills) {
-      resultBox.innerHTML = '<p class="error">This job does not list required skills yet.</p>';
+    if (!currentJob || (!currentJob.requiredSkills && !currentJob.preferredSkills)) {
+      resultBox.innerHTML = '<p class="error">This job does not list required or preferred skills yet.</p>';
       return;
     }
 
@@ -1612,16 +1625,17 @@ if (jobDetails) {
     resultBox.innerHTML = '<p>Comparing your profile with this job…</p>';
     try {
       const profileResponse = await fetch(`${JAVA_API}/profile-job-seeker/${encodeURIComponent(jobSeekerId)}`);
-      const profile = await profileResponse.json();
-      if (!profileResponse.ok || !profile.success || !profile.skills || !profile.skills.trim()) {
-        resultBox.innerHTML = '<p>Add your skills to your profile first, then come back to compare.</p><a href="profile.html">Update my profile</a>';
-        return;
-      }
+      const profile = profileResponse.ok ? await profileResponse.json() : {};
+      const candidateSkills = profile.success && profile.skills ? profile.skills : "";
 
       const response = await fetch(`${ML_API}/skill-gap`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ candidate_skills: profile.skills, required_skills: currentJob.requiredSkills })
+        body: JSON.stringify({
+          candidate_skills: candidateSkills,
+          required_skills: currentJob.requiredSkills || "",
+          preferred_skills: currentJob.preferredSkills || ""
+        })
       });
       const analysis = await response.json();
       if (!response.ok) throw new Error(analysis.error || "Could not compare skills");
@@ -1629,11 +1643,54 @@ if (jobDetails) {
       const chips = (items, kind) => items.length
         ? `<ul class="analysis-chips ${kind}">${items.map((skill) => `<li>${escapeHtml(skill)}</li>`).join("")}</ul>`
         : '<p class="analysis-empty">None identified</p>';
+      const storageKey = `hirebase.learning-plan.${currentJob.id}`;
+      let completed = {};
+      try {
+        const savedProgress = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        if (savedProgress && typeof savedProgress === "object" && !Array.isArray(savedProgress)) completed = savedProgress;
+      } catch (storageError) { completed = {}; }
+      const planItems = analysis.learning_plan || [];
+      const requiredCoverageLabel = analysis.coverage === null
+        ? "No required skills listed"
+        : `${analysis.coverage}%`;
+      const checklist = planItems.length
+        ? `<div class="learning-checklist">${planItems.map((item) => {
+            const itemKey = `${item.category}:${item.skill}`;
+            const isChecked = Boolean(completed[itemKey]);
+            return `<label class="learning-checklist-item ${isChecked ? "is-complete" : ""}">
+              <input type="checkbox" data-learning-key="${escapeHtml(itemKey)}" ${isChecked ? "checked" : ""}>
+              <span class="learning-check-copy"><span class="learning-item-meta"><strong>${escapeHtml(item.category)} skill</strong><small>${escapeHtml(item.priority)} priority</small></span>
+                <b>${escapeHtml(item.skill)}</b><span>${escapeHtml(item.suggested_step)}</span></span>
+            </label>`;
+          }).join("")}</div>`
+        : '<p class="analysis-empty">No skill gaps found from the skills on your profile.</p>';
       resultBox.innerHTML = `
-        <div class="analysis-summary"><strong>${analysis.coverage}%</strong><span>of listed skills appear on your profile (${analysis.matched_count}/${analysis.required_count})</span></div>
-        <h4>Skills on your profile</h4>${chips(analysis.matched_skills || [], "matched")}
-        <h4>Skills not listed on your profile</h4>${chips(analysis.missing_skills || [], "missing")}
+        <div class="analysis-summary"><strong>${requiredCoverageLabel}</strong><span>required skills on your profile (${analysis.matched_count}/${analysis.required_count})</span></div>
+        <div class="skill-gap-categories">
+          <section class="skill-gap-category required-category"><div class="skill-gap-category-heading"><h4>Required skills</h4><span>Core qualifications</span></div>
+            <p class="skill-gap-count">${analysis.matched_count} of ${analysis.required_count} listed</p>
+            <h5>Already on your profile</h5>${chips(analysis.matched_skills || [], "matched")}
+            <h5>To develop</h5>${chips(analysis.missing_skills || [], "missing")}
+          </section>
+          <section class="skill-gap-category preferred-category"><div class="skill-gap-category-heading"><h4>Preferred skills</h4><span>Helpful extras</span></div>
+            <p class="skill-gap-count">${analysis.matched_preferred_count} of ${analysis.preferred_count} listed</p>
+            <h5>Already on your profile</h5>${chips(analysis.matched_preferred_skills || [], "matched")}
+            <h5>Optional to develop</h5>${chips(analysis.missing_preferred_skills || [], "missing")}
+          </section>
+        </div>
+        <section class="learning-plan-section"><div class="ats-section-heading"><div><span class="ats-overline">YOUR LEARNING PLAN</span><h4>Build skills at your pace</h4></div><span class="ats-recommendation-count">${planItems.length} items</span></div>
+          <p class="analysis-note">Required gaps come first. Preferred skills are optional. Check an item when you have practiced it; progress is saved in this browser for this job.</p>
+          ${checklist}
+        </section>
         <p class="analysis-note">${escapeHtml(analysis.suggestion)}</p>`;
+
+      resultBox.querySelectorAll("input[data-learning-key]").forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+          completed[checkbox.dataset.learningKey] = checkbox.checked;
+          try { localStorage.setItem(storageKey, JSON.stringify(completed)); } catch (storageError) { /* Keep the current checklist usable if storage is unavailable. */ }
+          checkbox.closest(".learning-checklist-item")?.classList.toggle("is-complete", checkbox.checked);
+        });
+      });
     } catch (error) {
       resultBox.innerHTML = '<p class="error">Could not compare skills. Check that the Java and Python services are running.</p>';
     } finally {
@@ -1910,7 +1967,7 @@ if (jobDetails) {
           ) {
 
             atsResult.innerHTML =
-              '<p class="error">Upload a PDF or DOCX resume from <a href="profile.html?v=20261025-quality-pass">your profile</a>, then return here to analyze it.</p>';
+              '<p class="error">Upload a PDF or DOCX resume from <a href="profile.html?v=20261025-learning-plan-v2">your profile</a>, then return here to analyze it.</p>';
 
             return;
           }
@@ -1960,6 +2017,7 @@ if (jobDetails) {
             ["Required skills", dimensions.skill_coverage, `${weights.skill_coverage || 0}% of score`],
             ["Job keywords", dimensions.keyword_coverage, `${weights.keyword_coverage || 0}% of score`],
             ["Text similarity", dimensions.text_similarity, `${weights.text_similarity || 0}% of score`],
+            ["Semantic match", dimensions.semantic_similarity, `${weights.semantic_similarity || 0}% of score`],
             ["Resume structure", dimensions.resume_structure, `${weights.resume_structure || 0}% of score`]
           ].filter(([, value, weight]) => value !== null && value !== undefined && !weight.startsWith("0%"));
           const metricCards = metrics.map(([label, value, weight]) => `
@@ -1982,18 +2040,42 @@ if (jobDetails) {
             </article>`;
           }).join("");
           const signals = atsData.signals || {};
+          const requirementEvidence = atsData.requirements_evidence || [];
+          const evidenceCards = requirementEvidence.map((item) => `
+            <article class="ats-evidence-item">
+              <div class="ats-evidence-heading"><strong>${escapeHtml(item.requirement || "Requirement")}</strong><span class="ats-evidence-status ${item.status === "matched" ? "is-matched" : "is-missing"}">${item.status === "matched" ? "Exact skill found" : "Not explicitly found"}</span></div>
+              ${(item.resume_evidence || []).length
+                ? `<ul>${item.resume_evidence.map((excerpt) => `<li><q>${escapeHtml(excerpt)}</q></li>`).join("")}</ul>`
+                : `<p>${escapeHtml(item.explanation || "No exact skill phrase was found in the extracted resume text.")}</p>`}
+            </article>`).join("");
+          const semanticAnalysis = atsData.semantic_analysis || {};
+          const semanticEvidence = (semanticAnalysis.matches || []).slice(0, 8).map((item) => `
+            <article class="ats-semantic-item">
+              <div class="ats-evidence-heading"><strong>Job wording</strong><span class="ats-evidence-status ${item.status === "matched" ? "is-matched" : item.status === "related" ? "is-related" : "is-missing"}">${escapeHtml(item.status || "review")}${item.similarity === undefined ? "" : ` · ${Number(item.similarity).toFixed(0)}%`}</span></div>
+              <p><q>${escapeHtml(item.job_requirement || "")}</q></p>
+              ${item.resume_evidence ? `<p><strong>Closest resume phrase:</strong> <q>${escapeHtml(item.resume_evidence)}</q></p>` : `<p>${escapeHtml(item.explanation || "No close wording was found.")}</p>`}
+            </article>`).join("");
 
           atsResult.innerHTML = `
             <div class="ats-result-card">
               <div class="ats-score-hero">
                 <div class="ats-score-ring" style="--score:${score}%"><div><strong>${score.toFixed(0)}<small>%</small></strong><span>alignment</span></div></div>
-                <div class="ats-score-copy"><span class="ats-overline">YOUR ROLE ALIGNMENT</span><h3>${escapeHtml(atsData.score_label || "Resume analysis complete")}</h3><p>Compared your resume with this job's requirements and description.</p><span class="ats-method-pill">Python NLP | scikit-learn TF-IDF</span></div>
+                <div class="ats-score-copy"><span class="ats-overline">YOUR ROLE ALIGNMENT</span><h3>${escapeHtml(atsData.score_label || "Resume analysis complete")}</h3><p>Compared your resume with this job's requirements and description.</p><span class="ats-method-pill">${semanticAnalysis.available ? "Python NLP · sentence embeddings · TF-IDF" : "Python NLP · TF-IDF"}</span></div>
               </div>
               <section class="ats-metrics-grid" aria-label="Analysis breakdown">${metricCards}</section>
               <div class="ats-analysis-columns">
                 <section><h3>Required skills found</h3>${chips(atsData.matched_skills, "matched", "No listed skills were detected in the resume text.")}</section>
                 <section><h3>Skills to review</h3>${chips(atsData.missing_skills, "missing", "All listed required skills were detected.")}</section>
               </div>
+              <section class="ats-evidence-section">
+                <div class="ats-section-heading"><div><span class="ats-overline">TRACEABLE RESULTS</span><h3>Why each skill was matched</h3></div></div>
+                ${evidenceCards || '<p class="analysis-empty">This job did not provide a separate required-skills list.</p>'}
+              </section>
+              <details class="ats-semantic-details">
+                <summary>View sentence-level evidence and related wording</summary>
+                <p class="analysis-note">${escapeHtml(semanticAnalysis.note || "Semantic comparison was not available.")}</p>
+                ${semanticEvidence || '<p class="analysis-empty">No sentence-level comparisons are available for this resume and job.</p>'}
+              </details>
               <details class="ats-keyword-details"><summary>View keyword comparison</summary>
                 <h4>Detected in your resume</h4>${chips(atsData.matched_keywords, "matched", "No job terms detected yet.")}
                 <h4>Not detected</h4>${chips(atsData.missing_keywords, "missing", "No missing terms detected.")}

@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/post-job.css" />
-      <link rel="stylesheet" href="css/polish.css?v=20261025-quality-pass" />
+      <link rel="stylesheet" href="css/polish.css?v=20261025-learning-plan-v2" />
   </head>
 
   <body class="employer-post-page">
@@ -22,7 +22,7 @@
       <nav class="app-nav" aria-label="Employer navigation">
         <a href="employer-dashboard.html">Dashboard</a>
         <a href="post-job.html" class="active">Post a Job</a>
-        <a href="employer-profile.html?v=20261025-quality-pass">Company Profile</a>
+        <a href="employer-profile.html?v=20261025-learning-plan-v2">Company Profile</a>
         <a href="login.html" onclick="localStorage.clear()">Logout</a>
       </nav>
     </header>
@@ -79,7 +79,7 @@
 
           <div class="form-group full-width">
             <label for="requiredSkills">
-              Required Skills
+              Required skills
             </label>
 
             <textarea
@@ -91,8 +91,19 @@
             ></textarea>
 
             <small class="form-hint">
-              Use commas to separate skills (for example: Java, SQL, React).
+              Separate with commas. Candidates will treat these as core requirements.
             </small>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="preferredSkills">Preferred skills <span>(optional)</span></label>
+            <textarea
+              id="preferredSkills"
+              name="preferredSkills"
+              rows="3"
+              placeholder="Example: Docker, AWS, accessibility testing"
+            ></textarea>
+            <small class="form-hint">Separate with commas. These are helpful extras, not required qualifications.</small>
           </div>
 
 
@@ -179,7 +190,7 @@
     </div>
 
 
-    <script src="script.js?v=20261025-quality-pass"></script>
+    <script src="script.js?v=20261025-learning-plan-v2"></script>
 
   </body>
 </html>

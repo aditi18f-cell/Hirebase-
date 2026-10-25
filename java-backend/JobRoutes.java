@@ -42,6 +42,7 @@ public class JobRoutes {
                     data.get("experienceRequired").getAsInt();
 
             String requiredSkills = "";
+            String preferredSkills = "";
 
             if (data.has("requiredSkills")
                     && !data.get("requiredSkills").isJsonNull()) {
@@ -50,12 +51,16 @@ public class JobRoutes {
                         data.get("requiredSkills").getAsString();
             }
 
+            if (data.has("preferredSkills") && !data.get("preferredSkills").isJsonNull()) {
+                preferredSkills = data.get("preferredSkills").getAsString();
+            }
+
 
             String sql =
                     "INSERT INTO jobs " +
                     "(employer_id, job_title, job_description, " +
-                    "location, salary, job_type, experience_required, required_skills) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    "location, salary, job_type, experience_required, required_skills, preferred_skills) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 
             Connection conn =
@@ -72,6 +77,7 @@ public class JobRoutes {
             pstmt.setString(6, jobType);
             pstmt.setInt(7, experienceRequired);
             pstmt.setString(8, requiredSkills);
+            pstmt.setString(9, preferredSkills);
 
 
             int rows =
@@ -144,6 +150,7 @@ public class JobRoutes {
                     "j.job_type, " +
                     "j.experience_required, " +
                     "j.required_skills, " +
+                    "j.preferred_skills, " +
                     "j.posted_at, " +
                     "e.company_name " +
                     "FROM jobs j " +
@@ -187,6 +194,9 @@ public class JobRoutes {
 
                 job.put("requiredSkills",
                         rs.getString("required_skills"));
+
+                job.put("preferredSkills",
+                        rs.getString("preferred_skills"));
 
                 job.put("postedAt",
                         rs.getString("posted_at"));
@@ -276,6 +286,7 @@ public class JobRoutes {
                     "j.job_type, " +
                     "j.experience_required, " +
                     "j.required_skills, " +
+                    "j.preferred_skills, " +
                     "j.posted_at, " +
                     "e.company_name " +
                     "FROM jobs j " +
@@ -284,6 +295,7 @@ public class JobRoutes {
                     "WHERE j.job_title LIKE ? " +
                     "OR j.job_description LIKE ? " +
                     "OR j.required_skills LIKE ? " +
+                    "OR j.preferred_skills LIKE ? " +
                     "OR e.company_name LIKE ? " +
                     "ORDER BY j.posted_at DESC";
 
@@ -300,6 +312,7 @@ public class JobRoutes {
             pstmt.setString(2, searchValue);
             pstmt.setString(3, searchValue);
             pstmt.setString(4, searchValue);
+            pstmt.setString(5, searchValue);
 
 
             ResultSet rs =
@@ -335,6 +348,9 @@ public class JobRoutes {
 
                 job.put("requiredSkills",
                         rs.getString("required_skills"));
+
+                job.put("preferredSkills",
+                        rs.getString("preferred_skills"));
 
                 job.put("postedAt",
                         rs.getString("posted_at"));
@@ -420,6 +436,7 @@ public class JobRoutes {
                     "j.job_type, " +
                     "j.experience_required, " +
                     "j.required_skills, " +
+                    "j.preferred_skills, " +
                     "j.posted_at, " +
                     "e.company_name " +
                     "FROM jobs j " +
@@ -499,6 +516,11 @@ public class JobRoutes {
             result.put(
                     "requiredSkills",
                     rs.getString("required_skills")
+            );
+
+            result.put(
+                    "preferredSkills",
+                    rs.getString("preferred_skills")
             );
 
             result.put(
@@ -650,6 +672,7 @@ public class JobRoutes {
                     "j.job_type, " +
                     "j.experience_required, " +
                     "j.required_skills, " +
+                    "j.preferred_skills, " +
                     "j.posted_at, " +
                     "e.company_name " +
                     "FROM saved_jobs s " +
@@ -698,6 +721,9 @@ public class JobRoutes {
 
                 job.put("requiredSkills",
                         rs.getString("required_skills"));
+
+                job.put("preferredSkills",
+                        rs.getString("preferred_skills"));
 
                 job.put("postedAt",
                         rs.getString("posted_at"));
@@ -784,6 +810,7 @@ public class JobRoutes {
                     "job_type, " +
                     "experience_required, " +
                     "required_skills, " +
+                    "preferred_skills, " +
                     "posted_at " +
                     "FROM jobs " +
                     "WHERE employer_id = ? " +
@@ -829,6 +856,9 @@ public class JobRoutes {
 
                 job.put("requiredSkills",
                         rs.getString("required_skills"));
+
+                job.put("preferredSkills",
+                        rs.getString("preferred_skills"));
 
                 job.put("postedAt",
                         rs.getString("posted_at"));
@@ -921,12 +951,17 @@ public class JobRoutes {
                     data.get("experienceRequired").getAsInt();
 
             String requiredSkills = "";
+            String preferredSkills = "";
 
             if (data.has("requiredSkills")
                     && !data.get("requiredSkills").isJsonNull()) {
 
                 requiredSkills =
                         data.get("requiredSkills").getAsString();
+            }
+
+            if (data.has("preferredSkills") && !data.get("preferredSkills").isJsonNull()) {
+                preferredSkills = data.get("preferredSkills").getAsString();
             }
 
 
@@ -942,7 +977,8 @@ public class JobRoutes {
                     "salary = ?, " +
                     "job_type = ?, " +
                     "experience_required = ?, " +
-                    "required_skills = ? " +
+                    "required_skills = ?, " +
+                    "preferred_skills = ? " +
                     "WHERE id = ?";
 
 
@@ -960,7 +996,8 @@ public class JobRoutes {
             pstmt.setInt(6, experienceRequired);
 
             pstmt.setString(7, requiredSkills);
-            pstmt.setInt(8, jobId);
+            pstmt.setString(8, preferredSkills);
+            pstmt.setInt(9, jobId);
 
 
             int rows =

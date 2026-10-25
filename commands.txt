@@ -5,6 +5,7 @@ TERMINAL 1 - Java API
 $secureDbPassword = Read-Host "Enter MySQL password" -AsSecureString
 $dbPasswordPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureDbPassword)
 try { $env:HIREBASE_DB_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($dbPasswordPointer) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($dbPasswordPointer) }
+$env:HIREBASE_DB_URL = "jdbc:mysql://127.0.0.1:3306/hirirebase?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
 mvn -q -DskipTests compile dependency:build-classpath "-Dmdep.outputFile=target/dependencies-classpath.txt"
 $dependencies = (Get-Content target\dependencies-classpath.txt -Raw).Trim()
 java -cp "target\classes;$dependencies" App
@@ -14,6 +15,7 @@ TERMINAL 2 - Python analysis service
 Set-Location .\python-ml-service
 # Run once for a fresh Python environment:
 python -m pip install -r requirements.txt
+# The first ATS analysis downloads the sentence-embedding model; internet is needed once.
 python app.py
 
 TERMINAL 3 - Static frontend
@@ -21,3 +23,7 @@ TERMINAL 3 - Static frontend
 python -m http.server 8000
 
 Open http://localhost:8000/ in your browser.
+
+DATABASE UPDATE FOR THIS FEATURE
+
+For an existing database, run database-migration-preferred-skills.sql once in MySQL Workbench before restarting the Java API. Fresh databases created from database-schema.sql already include the preferred_skills column.

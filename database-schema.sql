@@ -35,6 +35,7 @@ CREATE TABLE jobs (
     experience_required INT DEFAULT 0,
     job_type VARCHAR(50),
     required_skills TEXT,
+    preferred_skills TEXT,
     posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expiry_date DATE,
     is_active BOOLEAN DEFAULT TRUE,
