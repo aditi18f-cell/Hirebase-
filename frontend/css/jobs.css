@@ -87,56 +87,6 @@
 }
 
 
-/* ================= SMART MATCHING INFO ================= */
-
-.matching-info {
-    display: flex;
-    align-items: center;
-
-    gap: 14px;
-
-    padding: 18px;
-
-    margin-bottom: 28px;
-
-    background: #eff6ff;
-
-    border: 1px solid #dbeafe;
-    border-radius: 12px;
-}
-
-.matching-icon {
-    width: 42px;
-    height: 42px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    flex-shrink: 0;
-
-    background: #ffffff;
-
-    border-radius: 9px;
-
-    font-size: 20px;
-}
-
-.matching-info h2 {
-    margin-bottom: 3px;
-
-    color: #1e3a8a;
-
-    font-size: 16px;
-}
-
-.matching-info p {
-    color: #64748b;
-
-    font-size: 13px;
-}
-
-
 /* ================= JOBS HEADER ================= */
 
 .jobs-list-header {
@@ -306,9 +256,4 @@
     .search-row button {
         width: 100%;
     }
-
-    .matching-info {
-        align-items: flex-start;
-    }
-
 }

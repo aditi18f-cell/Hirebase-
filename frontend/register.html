@@ -12,62 +12,8 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/auth.css" />
 
-    <style>
-      .register-type {
-        display: flex;
-        gap: 15px;
-        margin: 20px 0;
-      }
-
-      .type-option {
-        flex: 1;
-        padding: 16px;
-        border: 2px solid #ddd;
-        border-radius: 10px;
-        cursor: pointer;
-        text-align: center;
-        background: #fff;
-        transition: 0.2s;
-      }
-
-      .type-option:hover {
-        border-color: #2563eb;
-      }
-
-      .type-option input {
-        margin-right: 8px;
-      }
-
-      .type-option.active {
-        border-color: #2563eb;
-        background: #eff6ff;
-      }
-
-      .account-heading {
-        text-align: center;
-        margin-bottom: 8px;
-      }
-
-      .account-description {
-        text-align: center;
-        color: #666;
-        margin-bottom: 25px;
-      }
-
-      .company-section {
-        padding: 18px;
-        margin-top: 10px;
-        border-radius: 10px;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-      }
-
-      .company-section h3 {
-        margin-top: 0;
-        color: #1e3a8a;
-      }
-    </style>
-      <link rel="stylesheet" href="css/polish.css?v=20261025-learning-plan-v2" />
+    <link rel="stylesheet" href="css/polish.css?v=20261026-register-premium-v3" />
+    <link rel="stylesheet" href="css/auth-premium.css?v=20261026-auth-premium-v1" />
   </head>
 
   <body class="register-page">
@@ -79,13 +25,13 @@
 
     <main class="register-layout">
       <section class="register-intro" aria-labelledby="registerIntroTitle">
-        <p class="register-eyebrow">A better way to move forward</p>
-        <h1 id="registerIntroTitle">Make your next move count.</h1>
-        <p class="register-lede">Build a thoughtful profile, find the right opportunities, and keep every application in one place.</p>
+        <p class="register-eyebrow">YOUR NEXT CHAPTER</p>
+        <h1 id="registerIntroTitle">A clearer path to your next opportunity.</h1>
+        <p class="register-lede">Create your Hirebase account to find roles, manage applications, or connect with candidates.</p>
         <ul class="register-benefits">
-          <li>Discover roles that fit your experience</li>
-          <li>Track applications from one workspace</li>
-          <li>Connect with teams looking for your skills</li>
+          <li><span>01</span> Find opportunities by skill and experience</li>
+          <li><span>02</span> Keep your applications organized</li>
+          <li><span>03</span> Manage hiring from one workspace</li>
         </ul>
       </section>
 
@@ -104,9 +50,9 @@
 
         <!-- ACCOUNT TYPE -->
         <div class="form-group">
-          <label><strong>I am here as a</strong></label>
+          <p class="register-role-label" id="roleChoiceLabel">Choose how you will use Hirebase</p>
 
-          <div class="register-type">
+          <div class="register-type" role="radiogroup" aria-labelledby="roleChoiceLabel">
 
             <label class="type-option active" id="jobSeekerOption">
               <input
@@ -114,6 +60,7 @@
                 name="userType"
                 value="job_seeker"
                 checked
+                aria-label="Job seeker"
               />
               <span class="role-title">Job seeker</span>
               <span class="role-description">Find roles and manage applications</span>
@@ -124,6 +71,7 @@
                 type="radio"
                 name="userType"
                 value="employer"
+                aria-label="Employer"
               />
               <span class="role-title">Employer</span>
               <span class="role-description">Post jobs and meet candidates</span>
@@ -133,6 +81,7 @@
         </div>
 
 
+        <div class="register-fields-grid">
         <!-- FULL NAME -->
         <div class="form-group">
           <label for="fullName" id="fullNameLabel">
@@ -143,6 +92,8 @@
             type="text"
             id="fullName"
             name="fullName"
+            autocomplete="name"
+            placeholder="Your full name"
             required
           />
         </div>
@@ -159,6 +110,8 @@
             type="email"
             id="email"
             name="email"
+            autocomplete="email"
+            placeholder="you@example.com"
             required
           />
 
@@ -176,6 +129,8 @@
             type="password"
             id="password"
             name="password"
+            autocomplete="new-password"
+            placeholder="Create a password"
             required
           />
 
@@ -190,16 +145,18 @@
           </label>
 
           <input
-            type="text"
+            type="tel"
             id="phone"
             name="phone"
+            autocomplete="tel"
+            placeholder="Phone number (optional)"
           />
 
         </div>
 
 
         <!-- ADDRESS -->
-        <div class="form-group">
+        <div class="form-group full-width">
 
           <label for="address">
             Address:
@@ -208,6 +165,8 @@
           <textarea
             id="address"
             name="address"
+            rows="3"
+            placeholder="City or address (optional)"
           ></textarea>
 
         </div>
@@ -216,11 +175,13 @@
         <!-- COMPANY INFORMATION -->
         <div
           id="companySection"
-          class="company-section"
+          class="company-section full-width"
           style="display: none;"
         >
 
-          <h3>Company information</h3>
+          <div class="company-section-heading"><p>COMPANY PROFILE</p><h3>Company information</h3><span>Add the details candidates will recognize.</span></div>
+
+          <div class="company-fields-grid">
 
           <div id="companyNameGroup" class="form-group">
 
@@ -235,7 +196,6 @@
             />
 
           </div>
-
 
           <div id="websiteGroup" class="form-group">
 
@@ -252,6 +212,9 @@
 
           </div>
 
+          </div>
+
+        </div>
         </div>
 
 
@@ -264,7 +227,7 @@
 
 
       <!-- MESSAGE -->
-      <p id="message"></p>
+      <p id="message" aria-live="polite"></p>
 
 
       <!-- LOGIN -->
@@ -278,7 +241,7 @@
     </main>
 
 
-    <script src="script.js?v=20261025-learning-plan-v2"></script>
+    <script src="script.js?v=20261026-register-premium-v1"></script>
 
 
     <!-- REGISTRATION UI -->

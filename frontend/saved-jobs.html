@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/saved-jobs.css" />
-      <link rel="stylesheet" href="css/polish.css?v=20261025-learning-plan-v2" />
+      <link rel="stylesheet" href="css/polish.css?v=20261026-saved-roles-v2" />
   </head>
 
   <body>
@@ -27,7 +27,7 @@
         <a href="job-seeker-dashboard.html">Dashboard</a>
         <a href="search-jobs.html">Find Jobs</a>
         <a href="saved-jobs.html" class="active">Saved Jobs</a>
-        <a href="profile.html?v=20261025-learning-plan-v2">My Profile</a>
+        <a href="profile.html?v=20261026-saved-roles-v2">My Profile</a>
         <a href="login.html" onclick="localStorage.clear()">Logout</a>
       </nav>
     </header>
@@ -39,16 +39,14 @@
 
       <section class="saved-jobs-header">
         <div>
-          <p class="saved-jobs-label">YOUR JOBS</p>
+          <p class="saved-jobs-label">YOUR SHORTLIST</p>
 
-          <h1>Saved Jobs</h1>
+          <h1>Saved roles</h1>
 
-          <p>Keep track of opportunities you want to explore later.</p>
+          <p>A focused list of opportunities you may want to pursue.</p>
         </div>
 
-        <a href="search-jobs.html" class="saved-find-button">
-          🔎 Find More Jobs
-        </a>
+        <a href="search-jobs.html" class="saved-find-button">Browse open roles <span aria-hidden="true">&rarr;</span></a>
       </section>
 
       <!-- ================= MESSAGE ================= -->
@@ -57,37 +55,27 @@
 
       <!-- ================= SAVED JOBS ================= -->
 
-      <section class="saved-jobs-section">
+      <section class="saved-jobs-section" aria-labelledby="savedRolesTitle">
         <div class="saved-section-heading">
           <div>
-            <h2>Your Saved Opportunities</h2>
+            <p class="saved-section-eyebrow">BOOKMARKED BY YOU</p>
+            <h2 id="savedRolesTitle">Your shortlist</h2>
 
-            <p>Jobs you saved while exploring Hirebase.</p>
+            <p>Compare role details and return to the listings that matter to you.</p>
           </div>
+          <span id="savedJobCount" class="saved-job-count" aria-live="polite">Loading</span>
+        </div>
+
+        <div class="saved-toolbar">
+          <label for="savedJobFilter">Filter your saved roles</label>
+          <input id="savedJobFilter" type="search" placeholder="Search title, company, or location" autocomplete="off" />
         </div>
 
         <div id="savedJobsList">
           <!-- Saved jobs will be displayed here dynamically -->
         </div>
       </section>
-
-      <!-- ================= HELP CARD ================= -->
-
-      <section class="saved-help-card">
-        <div class="saved-help-icon">💡</div>
-
-        <div>
-          <h3>Looking for more opportunities?</h3>
-
-          <p>
-            Search available jobs and use your resume match percentage to find
-            suitable opportunities.
-          </p>
-
-          <a href="search-jobs.html"> Explore Jobs → </a>
-        </div>
-      </section>
-    </main>
+</main>
 
     <!-- ================= FOOTER ================= -->
 
@@ -101,6 +89,6 @@
       <p>© 2026 Hirebase</p>
     </footer>
 
-    <script src="script.js?v=20261025-learning-plan-v2"></script>
+    <script src="script.js?v=20261026-saved-remove-fix-v1"></script>
   </body>
 </html>

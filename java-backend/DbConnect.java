@@ -10,34 +10,25 @@ public class DbConnect {
     );
     private static final String USERNAME = System.getenv().getOrDefault("HIREBASE_DB_USERNAME", "root");
 
-    public static Connection getConnection() {
+    public static Connection getConnection() throws SQLException {
 
         try {
             String password = System.getenv("HIREBASE_DB_PASSWORD");
             if (password == null) {
-                System.err.println("Set the HIREBASE_DB_PASSWORD environment variable before starting the Java API.");
-                return null;
+                throw new SQLException(
+                        "Set the HIREBASE_DB_PASSWORD environment variable before starting the Java API.");
             }
 
             Class.forName("com.mysql.cj.jdbc.Driver");
 
-            Connection conn = DriverManager.getConnection(
+            return DriverManager.getConnection(
                     URL,
                     USERNAME,
                     password
             );
 
-            return conn;
-
         } catch (ClassNotFoundException e) {
-            System.out.println("MySQL JDBC Driver not found.");
-            e.printStackTrace();
-            return null;
-
-        } catch (SQLException e) {
-            System.out.println("MySQL connection failed.");
-            e.printStackTrace();
-            return null;
+            throw new SQLException("MySQL JDBC Driver not found.", e);
         }
     }
 }

@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/jobs.css" />
-      <link rel="stylesheet" href="css/polish.css?v=20261025-learning-plan-v2" />
+      <link rel="stylesheet" href="css/polish.css?v=20261026-minimal-actions-v1" />
   </head>
 
   <body>
@@ -27,7 +27,7 @@
         <a href="job-seeker-dashboard.html">Dashboard</a>
         <a href="search-jobs.html" class="active">Find Jobs</a>
         <a href="saved-jobs.html">Saved Jobs</a>
-        <a href="profile.html?v=20261025-learning-plan-v2">My Profile</a>
+        <a href="profile.html?v=20261026-search-nav-polish-v1">My Profile</a>
         <a href="login.html" onclick="localStorage.clear()">Logout</a>
       </nav>
     </header>
@@ -39,12 +39,12 @@
 
       <section class="jobs-header">
         <div>
-          <p class="jobs-label">JOB SEARCH</p>
+          <p class="jobs-label">CAREER OPPORTUNITIES</p>
 
           <h1>Find Your Next Opportunity</h1>
 
           <p>
-            Search open roles. If you upload a resume, each result includes a text similarity hint to help you decide what to review.
+            Explore current openings by role, company, location, or skill.
           </p>
         </div>
       </section>
@@ -54,17 +54,18 @@
       <section class="job-search-box">
         <form id="searchForm">
           <div class="search-input-area">
-            <label for="keyword"> Search Jobs </label>
+            <label for="keyword">Search roles</label>
 
             <div class="search-row">
               <input
                 type="text"
                 id="keyword"
                 name="keyword"
-                placeholder="Search by job title, company or skills..."
+                placeholder="Try a job title, company, location, or skill"
+                autocomplete="off"
               />
 
-              <button type="submit">🔎 Search Jobs</button>
+              <button type="submit" class="jobs-search-submit">Search jobs</button>
             </div>
           </div>
         </form>
@@ -72,29 +73,17 @@
         <div id="message"></div>
       </section>
 
-      <!-- ================= MATCHING INFO ================= -->
-
-      <section class="matching-info">
-        <div class="matching-info-icon">🤖</div>
-
-        <div>
-          <h3>Resume relevance matching</h3>
-
-          <p>
-            Hirebase combines sentence-level meaning and exact wording to surface related roles. Review the matched phrases; this is a discovery aid, not a measure of your qualifications or hiring chances.
-          </p>
-        </div>
-      </section>
-
       <!-- ================= JOB LISTINGS ================= -->
 
       <section class="jobs-results">
         <div class="results-heading">
           <div>
-            <h2>Available Jobs</h2>
+            <p class="results-eyebrow">CURATED FOR YOUR SEARCH</p>
+            <h2>Open opportunities</h2>
 
-            <p>Jobs matching your search will appear below.</p>
+            <p>Review the role, requirements, and application details.</p>
           </div>
+          <span class="jobs-count" id="jobsCount" aria-live="polite">Loading roles</span>
         </div>
 
         <div id="jobListings">
@@ -115,6 +104,6 @@
       <p>© 2026 Hirebase</p>
     </footer>
 
-    <script src="script.js?v=20261025-learning-plan-v2"></script>
+    <script src="script.js?v=20261026-find-jobs-premium-v1"></script>
   </body>
 </html>

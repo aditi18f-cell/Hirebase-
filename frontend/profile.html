@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/profile.css" />
-      <link rel="stylesheet" href="css/polish.css?v=20261025-learning-plan-v2" />
+      <link rel="stylesheet" href="css/polish.css?v=20261026-minimal-actions-v1" />
   </head>
 
   <body>
@@ -27,7 +27,7 @@
         <a href="job-seeker-dashboard.html">Dashboard</a>
         <a href="search-jobs.html">Find Jobs</a>
         <a href="saved-jobs.html">Saved Jobs</a>
-        <a href="profile.html?v=20261025-learning-plan-v2" class="active">My Profile</a>
+        <a href="profile.html?v=20261026-saved-resume-v2" class="active">My Profile</a>
         <a href="login.html" onclick="localStorage.clear()">Logout</a>
       </nav>
     </header>
@@ -49,7 +49,7 @@
         </div>
 
         <a href="search-jobs.html" class="profile-find-button">
-          🔎 Find Jobs
+          Find jobs
         </a>
       </section>
 
@@ -145,34 +145,36 @@
 
       <!-- ================= RESUME ================= -->
 
-      <section class="profile-card resume-card">
+      <section class="profile-card resume-management-card">
         <div class="profile-card-header">
           <div class="profile-card-icon" aria-hidden="true">02</div>
-
           <div>
             <p class="section-label">RESUME</p>
-
-            <h2>Manage Your Resume</h2>
-
-            <p>
-              Upload a PDF or DOCX resume to compare your experience with open roles.
-            </p>
+            <h2>Manage your resume</h2>
+            <p>Keep one current resume ready for applications and role analysis.</p>
           </div>
         </div>
 
-        <div class="resume-upload-area">
-          <label for="resumeFile"> Choose Resume </label>
+        <div class="resume-management-grid">
+          <div class="resume-upload-area">
+            <div class="resume-upload-heading">
+              <span class="resume-step-label">UPLOAD A FILE</span>
+              <p>Select a PDF or DOCX resume from your device.</p>
+            </div>
+            <label for="resumeFile">Resume file</label>
+            <input type="file" id="resumeFile" accept=".pdf,.docx" />
+            <button type="button" id="uploadResumeButton">Upload resume</button>
+          </div>
 
-          <input type="file" id="resumeFile" accept=".pdf,.docx" />
-
-          <button type="button" id="uploadResumeButton">
-            📤 Upload Resume
-          </button>
+          <section class="resume-current-panel" aria-labelledby="resumeCurrentTitle">
+            <p class="resume-step-label">CURRENT FILE</p>
+            <h3 id="resumeCurrentTitle">Resume on your account</h3>
+            <div id="resumeInfo" aria-live="polite">
+              <p class="resume-empty-state">Checking for an uploaded resume...</p>
+            </div>
+          </section>
         </div>
-
-        <div id="resumeMessage"></div>
-
-        <div id="resumeInfo"></div>
+        <div id="resumeMessage" aria-live="polite"></div>
       </section>
 
       <!-- ================= CAREER TOOLS ================= -->
@@ -216,6 +218,6 @@
       <p>© 2026 Hirebase</p>
     </footer>
 
-    <script src="script.js?v=20261025-learning-plan-v2"></script>
+    <script src="script.js?v=20261026-saved-resume-v2"></script>
   </body>
 </html>

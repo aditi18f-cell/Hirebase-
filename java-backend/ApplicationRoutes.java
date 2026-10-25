@@ -13,174 +13,78 @@ public class ApplicationRoutes {
 
     // ==================== APPLY FOR JOB ====================
 
-    public static Object applyJob(
-            Request request,
-            Response response) {
-
+    public static Object applyJob(Request request, Response response) {
         try {
-
-            JsonObject data =
-                    gson.fromJson(
-                            request.body(),
-                            JsonObject.class
-                    );
-
-            int jobSeekerId =
-                    data.get("jobSeekerId").getAsInt();
-
-            int jobId =
-                    data.get("jobId").getAsInt();
-
-
-            Connection conn =
-                    DbConnect.getConnection();
-
-
-            // Get the candidate's resume
-            String resumeSql =
-                    "SELECT id FROM resumes " +
-                    "WHERE job_seeker_id = ? " +
-                    "ORDER BY id DESC LIMIT 1";
-
-
-            PreparedStatement resumeStmt =
-                    conn.prepareStatement(resumeSql);
-
-            resumeStmt.setInt(1, jobSeekerId);
-
-            ResultSet resumeRs =
-                    resumeStmt.executeQuery();
-
-
-            if (!resumeRs.next()) {
-
-                resumeRs.close();
-                resumeStmt.close();
-                conn.close();
-
+            JsonObject data = gson.fromJson(request.body(), JsonObject.class);
+            if (data == null || !data.has("jobSeekerId") || !data.has("jobId")
+                    || data.get("jobSeekerId").isJsonNull() || data.get("jobId").isJsonNull()) {
                 response.status(400);
-
-                return gson.toJson(
-                        Map.of(
-                                "success", false,
-                                "message",
-                                "Please upload your resume before applying"
-                        )
-                );
+                return gson.toJson(Map.of("success", false, "message", "A job seeker and job are required."));
             }
 
-
-            int resumeId =
-                    resumeRs.getInt("id");
-
-
-            resumeRs.close();
-            resumeStmt.close();
-
-
-            // Check if the candidate already applied
-            String checkSql =
-                    "SELECT id FROM applications " +
-                    "WHERE job_seeker_id = ? " +
-                    "AND job_id = ?";
-
-
-            PreparedStatement checkStmt =
-                    conn.prepareStatement(checkSql);
-
-            checkStmt.setInt(1, jobSeekerId);
-            checkStmt.setInt(2, jobId);
-
-
-            ResultSet checkRs =
-                    checkStmt.executeQuery();
-
-
-            if (checkRs.next()) {
-
-                checkRs.close();
-                checkStmt.close();
-                conn.close();
-
+            int jobSeekerId = data.get("jobSeekerId").getAsInt();
+            int jobId = data.get("jobId").getAsInt();
+            if (jobSeekerId <= 0 || jobId <= 0) {
                 response.status(400);
-
-                return gson.toJson(
-                        Map.of(
-                                "success", false,
-                                "message",
-                                "You have already applied for this job"
-                        )
-                );
+                return gson.toJson(Map.of("success", false, "message", "The job seeker or job ID is invalid."));
             }
 
+            try (Connection connection = DbConnect.getConnection()) {
+                if (connection == null) {
+                    response.status(500);
+                    return gson.toJson(Map.of("success", false, "message", "Database connection failed."));
+                }
 
-            checkRs.close();
-            checkStmt.close();
+                int resumeId;
+                try (PreparedStatement statement = connection.prepareStatement(
+                        "SELECT id FROM resumes WHERE job_seeker_id = ? ORDER BY id DESC LIMIT 1")) {
+                    statement.setInt(1, jobSeekerId);
+                    try (ResultSet result = statement.executeQuery()) {
+                        if (!result.next()) {
+                            response.status(400);
+                            return gson.toJson(Map.of("success", false,
+                                    "message", "Please upload your resume before applying."));
+                        }
+                        resumeId = result.getInt("id");
+                    }
+                }
 
+                try (PreparedStatement statement = connection.prepareStatement(
+                        "SELECT id FROM applications WHERE job_seeker_id = ? AND job_id = ?")) {
+                    statement.setInt(1, jobSeekerId);
+                    statement.setInt(2, jobId);
+                    try (ResultSet result = statement.executeQuery()) {
+                        if (result.next()) {
+                            response.status(409);
+                            return gson.toJson(Map.of("success", false,
+                                    "message", "You have already applied for this job."));
+                        }
+                    }
+                }
 
-            // Create application
-            String sql =
-                    "INSERT INTO applications " +
-                    "(job_seeker_id, resume_id, job_id, status) " +
-                    "VALUES (?, ?, ?, ?)";
-
-
-            PreparedStatement pstmt =
-                    conn.prepareStatement(sql);
-
-
-            pstmt.setInt(1, jobSeekerId);
-            pstmt.setInt(2, resumeId);
-            pstmt.setInt(3, jobId);
-            pstmt.setString(4, "Applied");
-
-
-            int rows =
-                    pstmt.executeUpdate();
-
-
-            pstmt.close();
-            conn.close();
-
-
-            if (rows > 0) {
-
-                response.status(200);
-
-                return gson.toJson(
-                        Map.of(
-                                "success", true,
-                                "message",
-                                "Application submitted successfully"
-                        )
-                );
+                try (PreparedStatement statement = connection.prepareStatement(
+                        "INSERT INTO applications (job_seeker_id, resume_id, job_id, status) VALUES (?, ?, ?, ?)")) {
+                    statement.setInt(1, jobSeekerId);
+                    statement.setInt(2, resumeId);
+                    statement.setInt(3, jobId);
+                    statement.setString(4, "Applied");
+                    statement.executeUpdate();
+                }
             }
 
-
+            response.status(201);
+            return gson.toJson(Map.of("success", true, "message", "Application submitted successfully."));
+        } catch (SQLIntegrityConstraintViolationException e) {
+            if (e.getErrorCode() == 1062) {
+                response.status(409);
+                return gson.toJson(Map.of("success", false, "message", "You have already applied for this job."));
+            }
             response.status(400);
-
-            return gson.toJson(
-                    Map.of(
-                            "success", false,
-                            "message",
-                            "Application could not be submitted"
-                    )
-            );
-
-
+            return gson.toJson(Map.of("success", false, "message", "The job or account could not be found."));
         } catch (Exception e) {
-
-            e.printStackTrace();
-
             response.status(500);
-
-            return gson.toJson(
-                    Map.of(
-                            "success", false,
-                            "message",
-                            e.getMessage()
-                    )
-            );
+            return gson.toJson(Map.of("success", false,
+                    "message", "Unable to submit your application right now. Please try again."));
         }
     }
 

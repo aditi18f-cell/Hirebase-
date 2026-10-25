@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/dashboard.css" />
-      <link rel="stylesheet" href="css/polish.css?v=20261025-learning-plan-v2" />
+      <link rel="stylesheet" href="css/polish.css?v=20261026-dashboard-workspace-v1" />
   </head>
 
   <body>
@@ -25,225 +25,70 @@
         <a href="job-seeker-dashboard.html" class="active">Dashboard</a>
         <a href="search-jobs.html">Find Jobs</a>
         <a href="saved-jobs.html">Saved Jobs</a>
-        <a href="profile.html?v=20261025-learning-plan-v2">My Profile</a>
+        <a href="profile.html?v=20261026-dashboard-workspace-v1">My Profile</a>
         <a href="login.html" onclick="localStorage.clear()">Logout</a>
       </nav>
     </header>
 
     <!-- ================= MAIN ================= -->
 
-    <main class="dashboard-page">
-      <!-- Welcome -->
-
+    <main class="dashboard-page seeker-dashboard">
       <section class="dashboard-welcome">
-        <div>
-          <p class="dashboard-label">JOB SEEKER DASHBOARD</p>
-
-          <h1>
-            Welcome back, <span id="dashboardUserName">Job Seeker</span> 👋
-          </h1>
-
-          <p>
-            Find jobs, improve your resume and discover opportunities that match
-            your skills.
-          </p>
-          <p class="dashboard-account-identity" id="dashboardAccountIdentity">Loading your signed-in account…</p>
+        <div class="dashboard-welcome-copy">
+          <p class="dashboard-label">JOB SEEKER WORKSPACE</p>
+          <h1>Welcome back, <span id="dashboardUserName">Job Seeker</span></h1>
+          <p>Keep your profile current, find roles that fit, and follow your applications.</p>
+          <p class="dashboard-account-identity" id="dashboardAccountIdentity">Loading account details...</p>
         </div>
-
-        <a href="search-jobs.html" class="dashboard-primary-button">
-          🔎 Find Jobs
-        </a>
+        <a href="search-jobs.html" class="dashboard-primary-button">Browse jobs</a>
       </section>
 
-      <!-- ================= QUICK STATS ================= -->
-
-      <section class="dashboard-stats">
-        <div class="stat-card">
-          <div class="stat-icon">🔎</div>
-
-          <div>
-            <span class="stat-number">Jobs</span>
-            <span class="stat-title">Find opportunities</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">💾</div>
-
-          <div>
-            <span class="stat-number">Saved</span>
-            <span class="stat-title">View saved jobs</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">📄</div>
-
-          <div>
-            <span class="stat-number">Resume</span>
-            <span class="stat-title">Manage your resume</span>
-          </div>
-        </div>
+      <section class="dashboard-stats" aria-label="Your job search overview">
+        <article class="stat-card">
+          <span class="stat-kicker">APPLICATIONS</span>
+          <strong class="stat-number" id="dashboardApplicationsCount">--</strong>
+          <span class="stat-title">Submitted</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-kicker">SAVED ROLES</span>
+          <strong class="stat-number" id="dashboardSavedCount">--</strong>
+          <span class="stat-title">Shortlisted for later</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-kicker">RESUME</span>
+          <strong class="stat-number stat-text-value" id="dashboardResumeStatus">Checking</strong>
+          <span class="stat-title">Your latest resume</span>
+        </article>
       </section>
 
-      <!-- ================= QUICK ACTIONS ================= -->
-
-      <section class="dashboard-section">
-        <div class="section-title">
-          <div>
-            <h2>Quick Actions</h2>
-
-            <p>Access the main Hirebase features from here.</p>
-          </div>
-        </div>
-
-        <div class="action-grid">
-          <a href="search-jobs.html" class="action-card">
-            <div class="action-icon">🔎</div>
-
+      <div class="dashboard-main-grid">
+        <section class="dashboard-section application-updates" aria-labelledby="applicationUpdatesTitle">
+          <div class="dashboard-section-heading">
             <div>
-              <h3>Find Jobs</h3>
-
-              <p>Compare the wording in your resume with job descriptions as a relevance hint.</p>
+              <p class="dashboard-label">RECENT ACTIVITY</p>
+              <h2 id="applicationUpdatesTitle">Applications</h2>
+              <p>Follow the latest status of each role you applied to.</p>
             </div>
-
-            <span class="action-arrow">→</span>
-          </a>
-
-          <a href="profile.html?v=20261025-learning-plan-v2" class="action-card">
-            <div class="action-icon">📄</div>
-
-            <div>
-              <h3>My Resume</h3>
-
-              <p>Upload and manage your resume for job matching.</p>
-            </div>
-
-            <span class="action-arrow">→</span>
-          </a>
-
-          <a href="profile.html?v=20261025-learning-plan-v2" class="action-card">
-            <div class="action-icon">🧠</div>
-
-            <div>
-              <h3>Skill Gap</h3>
-
-              <p>Compare your skills with the skills required for a job.</p>
-            </div>
-
-            <span class="action-arrow">→</span>
-          </a>
-
-          <a href="search-jobs.html" class="action-card">
-            <div class="action-icon">📊</div>
-
-            <div>
-              <h3>Resume alignment estimate</h3>
-
-              <p>Review detected job terms and resume sections for a selected job.</p>
-            </div>
-
-            <span class="action-arrow">→</span>
-          </a>
-
-          <a href="saved-jobs.html" class="action-card">
-            <div class="action-icon">💾</div>
-
-            <div>
-              <h3>Saved Jobs</h3>
-
-              <p>Quickly access jobs you saved for later.</p>
-            </div>
-
-            <span class="action-arrow">→</span>
-          </a>
-
-          <a href="profile.html?v=20261025-learning-plan-v2" class="action-card">
-            <div class="action-icon">👤</div>
-
-            <div>
-              <h3>My Profile</h3>
-
-              <p>Update your education, experience and skills.</p>
-            </div>
-
-            <span class="action-arrow">→</span>
-          </a>
-        </div>
-      </section>
-
-      <!-- ================= HOW FEATURES WORK ================= -->
-
-      <section class="dashboard-section feature-explanation">
-        <div class="section-title">
-          <div>
-            <h2>How Hirebase Helps You</h2>
-
-            <p>Your complete job search workflow in one place.</p>
+            <a href="search-jobs.html" class="dashboard-text-link">Find a role</a>
           </div>
-        </div>
-
-        <div class="workflow-grid">
-          <div class="workflow-card">
-            <span class="workflow-number">1</span>
-
-            <h3>Create Your Profile</h3>
-
-            <p>Add your education, experience and technical skills.</p>
+          <div id="applicationUpdates" aria-live="polite">
+            <p>Loading applications...</p>
           </div>
+        </section>
 
-          <div class="workflow-card">
-            <span class="workflow-number">2</span>
-
-            <h3>Upload Your Resume</h3>
-
-            <p>Upload your PDF or DOCX resume for analysis.</p>
-          </div>
-
-          <div class="workflow-card">
-            <span class="workflow-number">3</span>
-
-            <h3>Find Matching Jobs</h3>
-
-            <p>Hirebase compares your resume with available jobs.</p>
-          </div>
-
-          <div class="workflow-card">
-            <span class="workflow-number">4</span>
-
-            <h3>Improve Your Resume</h3>
-
-            <p>
-              Use the keyword estimate and skill comparison to review your materials before applying.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section class="dashboard-section application-updates" aria-labelledby="applicationUpdatesTitle">
-        <div class="section-title">
-          <div>
-            <p class="dashboard-label">APPLICATION UPDATES</p>
-            <h2 id="applicationUpdatesTitle">Your applications</h2>
-            <p>We’ll show an update here when an employer reviews your application.</p>
-          </div>
-        </div>
-        <div id="applicationUpdates" aria-live="polite">
-          <p>Loading your applications…</p>
-        </div>
-      </section>
-
-      <!-- ================= GET STARTED ================= -->
-
-      <section class="dashboard-cta">
-        <div>
-          <h2>Ready to find your next opportunity?</h2>
-
-          <p>Search jobs and discover how well your profile matches them.</p>
-        </div>
-
-        <a href="search-jobs.html"> Explore Jobs → </a>
-      </section>
+        <aside class="dashboard-next-panel" aria-labelledby="nextStepsTitle">
+          <p class="dashboard-label">NEXT STEPS</p>
+          <h2 id="nextStepsTitle">Keep your search moving</h2>
+          <p class="dashboard-next-intro">A few focused updates can make your applications easier to review.</p>
+          <a class="dashboard-next-link" href="profile.html?v=20261026-dashboard-workspace-v1">
+            <span><strong>Complete your profile</strong><small>Add experience, education, and skills.</small></span><b aria-hidden="true">&rarr;</b>
+          </a>
+          <a class="dashboard-next-link" href="search-jobs.html">
+            <span><strong>Explore open roles</strong><small>Review requirements before applying.</small></span><b aria-hidden="true">&rarr;</b>
+          </a>
+          <div class="dashboard-note"><strong>Before you apply</strong><p>Upload a readable PDF or DOCX resume, then review the role alignment estimate on the job page.</p></div>
+        </aside>
+      </div>
     </main>
 
     <!-- ================= FOOTER ================= -->
@@ -264,6 +109,6 @@
         document.getElementById("dashboardUserName").textContent = userName;
       }
     </script>
-    <script src="script.js?v=20261025-learning-plan-v2"></script>
+    <script src="script.js?v=20261026-saved-resume-v2"></script>
   </body>
 </html>

@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/job-details.css" />
-      <link rel="stylesheet" href="css/polish.css?v=20261025-learning-plan-v2" />
+      <link rel="stylesheet" href="css/polish.css?v=20261026-job-details-premium-v2" />
   </head>
 
   <body>
@@ -27,7 +27,7 @@
         <a href="job-seeker-dashboard.html">Dashboard</a>
         <a href="search-jobs.html" class="active">Find Jobs</a>
         <a href="saved-jobs.html">Saved Jobs</a>
-        <a href="profile.html?v=20261025-learning-plan-v2">My Profile</a>
+        <a href="profile.html?v=20261026-search-nav-polish-v1">My Profile</a>
         <a href="login.html" onclick="localStorage.clear()">Logout</a>
       </nav>
     </header>
@@ -50,7 +50,7 @@
         </div>
 
         <a href="search-jobs.html" class="back-jobs-link">
-          ← Back to Jobs
+          <span aria-hidden="true">←</span> Back to jobs
         </a>
       </section>
 
@@ -71,11 +71,11 @@
         <div class="job-action-area">
 
           <button id="saveJobBtn">
-            💾 Save Job
+            Save job
           </button>
 
           <button id="applyJobBtn">
-            📩 Apply Now
+            Apply now
           </button>
 
         </div>
@@ -90,7 +90,7 @@
         <div class="ats-header">
 
           <div class="ats-icon">
-            📊
+            ATS
           </div>
 
           <div>
@@ -130,56 +130,7 @@
 
       <!-- ================= SKILL GAP INFO ================= -->
 
-      <section class="job-feature-info">
-
-        <div class="job-feature-item">
-
-          <div class="job-feature-icon">
-            🎯
-          </div>
-
-          <div>
-
-            <h3>
-              Skill Gap Analysis
-            </h3>
-
-            <p>
-              Compare your skills with the skills required for this job from
-              your Profile page.
-            </p>
-
-            <a href="profile.html?v=20261025-learning-plan-v2">
-              Check Skill Gap →
-            </a>
-
-          </div>
-
-        </div>
-
-
-        <div class="job-feature-item">
-
-          <div class="job-feature-icon">
-            🤖
-          </div>
-
-          <div>
-
-            <h3>
-              Smart Job Matching
-            </h3>
-
-            <p>
-              Hirebase uses your resume and job requirements to calculate a
-              match percentage.
-            </p>
-
-          </div>
-
-        </div>
-
-      </section>
+      <section class="job-feature-info" aria-label="Role skill plan"></section>
 
     </main>
 
@@ -207,7 +158,7 @@
     </footer>
 
 
-    <script src="script.js?v=20261025-learning-plan-v2"></script>
+    <script src="script.js?v=20261026-job-details-premium-v1"></script>
 
   </body>
 </html>

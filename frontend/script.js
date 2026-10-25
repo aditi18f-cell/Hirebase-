@@ -25,16 +25,6 @@ function initializeAccountIdentity() {
   const appHeader = document.querySelector(".app-header");
   if (!identityCard && !dashboardIdentity && !appHeader) return;
   const appNav = appHeader?.querySelector(".app-nav");
-  let sessionChip = document.getElementById("appSessionIdentity");
-  if (appHeader && !sessionChip) {
-    sessionChip = document.createElement("span");
-    sessionChip.id = "appSessionIdentity";
-    sessionChip.className = "app-session-chip";
-    sessionChip.hidden = true;
-    const navigation = appHeader.querySelector(".app-nav");
-    if (navigation) appHeader.insertBefore(sessionChip, navigation);
-  }
-
   const accountId = localStorage.getItem("userId")
     || localStorage.getItem("jobSeekerId")
     || localStorage.getItem("employerId");
@@ -48,9 +38,9 @@ function initializeAccountIdentity() {
     if (!appNav) return;
     const page = window.location.pathname.split("/").pop();
     const items = role === "job_seeker"
-      ? [["Dashboard", "job-seeker-dashboard.html"], ["Find Jobs", "search-jobs.html"], ["Saved Jobs", "saved-jobs.html"], ["My Profile", "profile.html?v=20261025-learning-plan-v2"]]
+      ? [["Dashboard", "job-seeker-dashboard.html"], ["Find Jobs", "search-jobs.html"], ["Saved Jobs", "saved-jobs.html"], ["My Profile", "profile.html?v=20261026-saved-resume-v2"]]
       : role === "employer"
-        ? [["Dashboard", "employer-dashboard.html"], ["Post a Job", "post-job.html"], ["Company Profile", "employer-profile.html?v=20261025-learning-plan-v2"]]
+        ? [["Dashboard", "employer-dashboard.html"], ["Post a Job", "post-job.html"], ["Company Profile", "employer-profile.html?v=20261026-saved-resume-v2"]]
         : [["Home", "../index.html"], ["Find Jobs", "search-jobs.html"], ["Login", "login.html"], ["Create Account", "register.html"]];
     const activePage = page === "job-details.html" ? "search-jobs.html" : page;
     appNav.innerHTML = items.map(([label, href]) =>
@@ -72,11 +62,6 @@ function initializeAccountIdentity() {
   function renderIdentity({ name = "", email = "", id = "", role = roleName, status = "Active account" } = {}) {
     const verified = Boolean(id) && status !== "Signed out" && status !== "Account no longer exists";
     renderAppNavigation(verified ? userType : null);
-    if (sessionChip) {
-      sessionChip.hidden = !verified;
-      sessionChip.textContent = verified ? `${role} · ${email || name || "Account"} · ID ${id}` : "";
-      sessionChip.title = verified ? `${role} account · ${email || name || ""} · ID ${id}` : "";
-    }
     if (identityCard) {
       const avatar = document.getElementById("accountAvatar");
       const nameNode = document.getElementById("accountDisplayName");
@@ -641,33 +626,16 @@ if (uploadResumeButton) {
       if (result.success) {
 
         resumeInfo.innerHTML = `
-
-          <div class="resume-card">
-
-            <p>
-              <strong>Resume:</strong>
-              ${escapeHtml(result.fileName)}
-            </p>
-
-            <p>
-              <strong>Upload Date:</strong>
-              ${escapeHtml(result.uploadDate)}
-            </p>
-
-            <button
-              type="button"
-              onclick="deleteResume(${result.resumeId})">
-              Delete Resume
-            </button>
-
-          </div>
-
-        `;
+          <article class="uploaded-resume-card">
+            <p class="uploaded-resume-name"><strong>${escapeHtml(result.fileName || "Resume file")}</strong></p>
+            <p class="uploaded-resume-date">Uploaded ${escapeHtml(result.uploadDate || "date unavailable")}</p>
+            <button type="button" class="resume-delete-button" onclick="deleteResume(${Number(result.resumeId)})">Remove resume</button>
+          </article>`;
 
       } else {
 
         resumeInfo.innerHTML =
-          "<p>No resume uploaded.</p>";
+          '<p class="resume-empty-state">No resume is uploaded yet. Add a PDF or DOCX file to get started.</p>';
       }
 
 
@@ -680,7 +648,7 @@ if (uploadResumeButton) {
 
 
       resumeInfo.innerHTML =
-        "<p>Error loading resume.</p>";
+        '<p class="resume-empty-state is-error">Could not load your resume. Refresh the page and try again.</p>';
     }
 
   }
@@ -1176,6 +1144,103 @@ const jobListings =
     "jobListings"
   );
 
+const savedJobsList = document.getElementById("savedJobsList");
+if (savedJobsList) {
+  let savedJobsCache = [];
+  const savedJobCount = document.getElementById("savedJobCount");
+  const savedJobFilter = document.getElementById("savedJobFilter");
+
+  function renderSavedJobs(jobs) {
+    const query = (savedJobFilter?.value || "").trim().toLowerCase();
+    const visibleJobs = jobs.filter((job) =>
+      [job.jobTitle, job.companyName, job.location, job.requiredSkills, job.jobType]
+        .some((value) => String(value || "").toLowerCase().includes(query))
+    );
+    if (savedJobCount) {
+      savedJobCount.textContent = `${jobs.length} ${jobs.length === 1 ? "saved role" : "saved roles"}`;
+    }
+    if (!visibleJobs.length) {
+      savedJobsList.innerHTML = query
+        ? '<div class="empty-saved-jobs"><h3>No saved roles match that search</h3><p>Try another title, company, or location.</p></div>'
+        : '<div class="empty-saved-jobs"><span class="empty-saved-mark">YOUR SHORTLIST</span><h3>Your shortlist is ready</h3><p>Save a role while browsing and it will appear here for later.</p><a href="search-jobs.html">Browse open roles</a></div>';
+      return;
+    }
+
+    savedJobsList.innerHTML = visibleJobs.map((job) => {
+      const description = String(job.jobDescription || "").trim();
+      const summary = description.length > 220 ? `${description.slice(0, 217).trimEnd()}...` : description;
+      const skills = String(job.requiredSkills || "").split(/[,;|\r\n]+/).map((skill) => skill.trim()).filter(Boolean).slice(0, 6);
+      const salary = Number(job.salary) > 0 ? `₹${Number(job.salary).toLocaleString("en-IN")}` : "Salary not listed";
+      const initials = String(job.companyName || "H").trim().split(/\s+/).slice(0, 2).map((part) => part[0] || "").join("").toUpperCase();
+      return `<article class="saved-job-card" data-saved-job-card="${Number(job.id)}">
+        <div class="saved-job-heading"><div class="saved-company-mark" aria-hidden="true">${escapeHtml(initials || "H")}</div><div class="saved-job-title-block"><p class="saved-job-company">${escapeHtml(job.companyName || "Company")}</p><h3>${escapeHtml(job.jobTitle || "Untitled role")}</h3></div><span class="saved-status">Saved</span></div>
+        <div class="saved-job-meta"><span>${escapeHtml(job.location || "Location not listed")}</span><span>${escapeHtml(job.jobType || "Role type not listed")}</span><span>${escapeHtml(salary)}</span><span>${Number(job.experienceRequired || 0)}+ years</span></div>
+        <p class="saved-job-description">${escapeHtml(summary || "Open this role to review its responsibilities and qualifications.")}</p>
+        ${skills.length ? `<div class="saved-skills-row"><span>Required skills</span><ul class="saved-job-skills">${skills.map((skill) => `<li class="saved-job-skill">${escapeHtml(skill)}</li>`).join("")}</ul></div>` : ""}
+        <div class="saved-job-actions"><button type="button" class="remove-saved-job" data-remove-saved-job="${Number(job.id)}">Remove</button><a href="job-details.html?id=${encodeURIComponent(job.id)}">Review role <span aria-hidden="true">&rarr;</span></a></div>
+      </article>`;
+    }).join("");
+  }
+
+  async function loadSavedJobs() {
+    const jobSeekerId = getSignedInJobSeekerId();
+    if (!jobSeekerId) {
+      if (savedJobCount) savedJobCount.textContent = "Sign in required";
+      savedJobsList.innerHTML = '<div class="empty-saved-jobs"><h3>Sign in to view saved roles</h3><p>Saved opportunities are linked to your job seeker account.</p><a href="login.html">Sign in</a></div>';
+      return;
+    }
+
+    savedJobsList.innerHTML = '<p class="saved-jobs-loading">Loading your saved roles...</p>';
+    try {
+      const response = await fetch(`${JAVA_API}/saved-jobs/${encodeURIComponent(jobSeekerId)}`);
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || "Could not load saved jobs.");
+
+      savedJobsCache = Array.isArray(result.jobs) ? result.jobs : Object.values(result.jobs || {});
+      renderSavedJobs(savedJobsCache);
+    } catch (error) {
+      if (savedJobCount) savedJobCount.textContent = "Unavailable";
+      savedJobsList.innerHTML = `<div class="empty-saved-jobs saved-jobs-error"><h3>Saved roles could not load</h3><p>${escapeHtml(error.message || "Check that the Java API is running, then try again.")}</p><button type="button" id="retrySavedJobs">Try again</button></div>`;
+      document.getElementById("retrySavedJobs")?.addEventListener("click", loadSavedJobs);
+    }
+  }
+
+  savedJobFilter?.addEventListener("input", () => renderSavedJobs(savedJobsCache));
+  savedJobsList.addEventListener("click", async (event) => {
+    const removeButton = event.target.closest("[data-remove-saved-job]");
+    if (!removeButton) return;
+    const jobSeekerId = getSignedInJobSeekerId();
+    const jobId = removeButton.dataset.removeSavedJob;
+    if (!jobSeekerId || !jobId) return;
+
+    removeButton.disabled = true;
+    removeButton.textContent = "Removing...";
+    try {
+      const response = await fetch(`${JAVA_API}/saved-jobs/${encodeURIComponent(jobSeekerId)}/${encodeURIComponent(jobId)}`, { method: "DELETE" });
+      const responseText = await response.text();
+      let result;
+      try {
+        result = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        if (responseText.trimStart().startsWith("<")) {
+          throw new Error("The Java API does not recognize the remove-saved-job route. Restart the Java API from the project root, then try again.");
+        }
+        throw new Error("The Java API returned an unreadable response while removing this role.");
+      }
+      if (!response.ok || !result.success) throw new Error(result.message || "Could not remove this role.");
+      savedJobsCache = savedJobsCache.filter((job) => Number(job.id) !== Number(jobId));
+      renderSavedJobs(savedJobsCache);
+    } catch (error) {
+      removeButton.disabled = false;
+      removeButton.textContent = "Remove";
+      const message = document.getElementById("message");
+      if (message) message.innerHTML = `<p class="error">${escapeHtml(error.message || "Could not remove this role. Please try again.")}</p>`;
+    }
+  });
+
+  loadSavedJobs();
+}
+
 
 if (searchForm && jobListings) {
 
@@ -1211,6 +1276,11 @@ if (searchForm && jobListings) {
         Object.values(
           result.jobs || {}
         );
+
+      const resultsCount = document.getElementById("jobsCount");
+      if (resultsCount) {
+        resultsCount.textContent = `${jobs.length} ${jobs.length === 1 ? "role" : "roles"}`;
+      }
 
 
       if (
@@ -1342,55 +1412,54 @@ if (searchForm && jobListings) {
           );
 
 
-        jobCard.className =
-          "job-card";
-
+        jobCard.className = "job-card job-search-card";
+        const detailUrl = `job-details.html?id=${encodeURIComponent(job.id)}`;
+        const description = String(job.jobDescription || "").trim();
+        const summary = description.length > 190 ? `${description.slice(0, 187).trimEnd()}...` : description;
+        const skillTokens = (value) => String(value || "")
+          .split(/[,;|\r\n]+/)
+          .map((skill) => skill.trim())
+          .filter(Boolean);
+        const requiredSkills = skillTokens(job.requiredSkills).slice(0, 5);
+        const preferredSkills = skillTokens(job.preferredSkills).slice(0, 3);
+        const initials = String(job.companyName || "H")
+          .trim().split(/\s+/).slice(0, 2).map((part) => part[0] || "").join("").toUpperCase();
+        const salary = Number(job.salary) > 0 ? `₹${Number(job.salary).toLocaleString("en-IN")}` : "Salary not listed";
+        const relevance = matchScore === null
+          ? "Upload a resume for an estimate"
+          : `${Number(matchScore).toFixed(0)}% resume relevance`;
 
         jobCard.innerHTML = `
-
-          <h3>
-            ${escapeHtml(job.jobTitle || "Job")}
-          </h3>
-
-          <p>
-            <strong>Company:</strong>
-            ${escapeHtml(job.companyName || "N/A")}
-          </p>
-
-          <p>
-            ${escapeHtml(job.jobDescription || "")}
-          </p>
-
-          <p>
-            <strong>Location:</strong>
-            ${escapeHtml(job.location || "N/A")}
-          </p>
-
-          <p>
-            <strong>Required Skills:</strong>
-            ${escapeHtml(job.requiredSkills || "N/A")}
-          </p>
-
-          <p>
-            <strong>Preferred Skills:</strong>
-            ${escapeHtml(job.preferredSkills || "None listed")}
-          </p>
-
-          <p>
-            <strong>Resume relevance estimate:</strong>
-
-            <span class="match-badge">
-              ${matchScore === null ? "Add a resume to compare" : `${Number(matchScore).toFixed(1)}%`}
-            </span>
-          </p>
-
-          <a
-            href="job-details.html?id=${encodeURIComponent(job.id)}"
-            class="job-link">
-            View Job
-          </a>
-
-        `;
+          <div class="job-search-card-main">
+            <div class="job-company-mark" aria-hidden="true">${escapeHtml(initials || "H")}</div>
+            <div class="job-search-card-content">
+              <div class="job-search-card-heading">
+                <div>
+                  <p class="job-company-name">${escapeHtml(job.companyName || "Company")}</p>
+                  <h3>${escapeHtml(job.jobTitle || "Job opportunity")}</h3>
+                </div>
+                ${matchScore === null ? "" : `<span class="job-relevance-pill">${escapeHtml(relevance)}</span>`}
+              </div>
+              <div class="job-search-meta">
+                <span>${escapeHtml(job.location || "Location not listed")}</span>
+                <span>${escapeHtml(job.jobType || "Role type not listed")}</span>
+                <span>${escapeHtml(salary)}</span>
+                <span>${Number(job.experienceRequired || 0)}+ years</span>
+              </div>
+              <p class="job-search-summary">${escapeHtml(summary || "Open this listing to review the role responsibilities and qualifications.")}</p>
+              <div class="job-skill-group">
+                <span class="job-skill-label">Required</span>
+                ${requiredSkills.length
+                  ? `<ul class="job-skill-chips">${requiredSkills.map((skill) => `<li>${escapeHtml(skill)}</li>`).join("")}${skillTokens(job.requiredSkills).length > requiredSkills.length ? `<li class="job-skill-more">+${skillTokens(job.requiredSkills).length - requiredSkills.length}</li>` : ""}</ul>`
+                  : '<span class="job-skill-empty">Not specified</span>'}
+              </div>
+              ${preferredSkills.length ? `<div class="job-skill-group preferred-skill-group"><span class="job-skill-label">Preferred</span><ul class="job-skill-chips">${preferredSkills.map((skill) => `<li>${escapeHtml(skill)}</li>`).join("")}${skillTokens(job.preferredSkills).length > preferredSkills.length ? `<li class="job-skill-more">+${skillTokens(job.preferredSkills).length - preferredSkills.length}</li>` : ""}</ul></div>` : ""}
+            </div>
+          </div>
+          <div class="job-search-card-footer">
+            <span class="job-relevance-note">${matchScore === null ? "Add a resume to see a relevance estimate" : "Resume relevance is an estimate"}</span>
+            <a href="${detailUrl}" class="job-link">View role <span aria-hidden="true">&rarr;</span></a>
+          </div>`;
 
 
         jobListings.appendChild(
@@ -1520,23 +1589,44 @@ if (jobDetails) {
 
       currentJob = result;
 
+      const signedInSeekerId = getSignedInJobSeekerId();
+      if (signedInSeekerId && saveJobBtn) {
+        fetch(`${JAVA_API}/saved-jobs/${encodeURIComponent(signedInSeekerId)}`)
+          .then((response) => response.ok ? response.json() : null)
+          .then((savedResult) => {
+            const savedJobs = Array.isArray(savedResult?.jobs) ? savedResult.jobs : Object.values(savedResult?.jobs || {});
+            if (savedResult?.success && savedJobs.some((job) => Number(job.id) === Number(currentJob.id))) {
+              saveJobBtn.disabled = true;
+              saveJobBtn.textContent = "Saved";
+            }
+          })
+          .catch(() => { /* Saving remains available if the saved list is temporarily unavailable. */ });
+      }
+      if (signedInSeekerId && applyJobBtn) {
+        fetch(`${JAVA_API}/applications/${encodeURIComponent(signedInSeekerId)}`)
+          .then((response) => response.ok ? response.json() : null)
+          .then((applicationsResult) => {
+            const alreadyApplied = (applicationsResult?.applications || [])
+              .some((application) => Number(application.jobId) === Number(currentJob.id));
+            if (alreadyApplied) {
+              applyJobBtn.disabled = true;
+              applyJobBtn.textContent = "Applied";
+            }
+          })
+          .catch(() => { /* Duplicate applications are also checked on the server. */ });
+      }
+
       const featureInfo = document.querySelector(".job-feature-info");
       if (featureInfo) {
         featureInfo.innerHTML = `
           <article class="job-feature-item" id="jobSkillGapSection">
-            <div class="job-feature-icon">SKILLS</div>
-            <div>
-              <h3>Compare your skills with this role</h3>
-              <p>Compare your profile with required and preferred skills, then build a job-specific learning checklist. Required gaps come first; preferred skills are optional.</p>
-              <button type="button" id="checkJobSkillGapBtn">Build my skill plan</button>
+            <div class="job-feature-icon" aria-hidden="true">02</div>
+            <div class="job-feature-copy">
+              <p class="job-feature-label">ROLE FIT</p>
+              <h2>Build your skill plan</h2>
+              <p>See which required and preferred skills are already on your profile, then make a practical checklist for the gaps.</p>
+              <button class="job-feature-button" type="button" id="checkJobSkillGapBtn">Compare my skills</button>
               <div id="jobSkillGapResult" aria-live="polite"></div>
-            </div>
-          </article>
-          <article class="job-feature-item">
-            <div class="job-feature-icon">MATCH</div>
-            <div>
-              <h3>Resume relevance matching</h3>
-              <p>Search results combine sentence meaning and exact wording from your resume with each job. It is a discovery hint, not a prediction of hiring success.</p>
             </div>
           </article>`;
 
@@ -1544,56 +1634,47 @@ if (jobDetails) {
       }
 
 
+      const companyName = String(result.companyName || "Company").trim();
+      const renderSkillTags = (value, emptyText) => {
+        const skills = String(value || "").split(/[,;\n]+/).map((skill) => skill.trim()).filter(Boolean);
+        return skills.length
+          ? `<ul class="job-detail-skill-list">${skills.map((skill) => `<li>${escapeHtml(skill)}</li>`).join("")}</ul>`
+          : `<p class="job-detail-empty">${emptyText}</p>`;
+      };
+      const experience = result.experienceRequired === null || result.experienceRequired === undefined || result.experienceRequired === ""
+        ? "Not specified"
+        : `${escapeHtml(result.experienceRequired)} ${Number(result.experienceRequired) === 1 ? "year" : "years"}`;
+
       jobDetails.innerHTML = `
-
-        <h2>
-          ${escapeHtml(result.jobTitle || "Job")}
-        </h2>
-
-        <p>
-          <strong>Company:</strong>
-          ${escapeHtml(result.companyName || "N/A")}
-        </p>
-
-        <p>
-          <strong>Location:</strong>
-          ${escapeHtml(result.location || "N/A")}
-        </p>
-
-        <p>
-          <strong>Salary:</strong>
-          ₹${result.salary || "N/A"}
-        </p>
-
-        <p>
-          <strong>Job Type:</strong>
-          ${escapeHtml(result.jobType || "N/A")}
-        </p>
-
-        <p>
-          <strong>Experience Required:</strong>
-          ${result.experienceRequired || 0}
-          years
-        </p>
-
-        <p>
-          <strong>Required Skills:</strong>
-          ${escapeHtml(result.requiredSkills || "N/A")}
-        </p>
-
-        <p>
-          <strong>Preferred Skills:</strong>
-          ${escapeHtml(result.preferredSkills || "None listed")}
-        </p>
-
-        <p>
-          <strong>Job Description:</strong>
-          ${escapeHtml(result.jobDescription || "N/A")}
-        </p>
-
+        <div class="job-detail-role">
+          <div class="job-detail-company-mark" aria-hidden="true">${escapeHtml(companyName.charAt(0).toUpperCase())}</div>
+          <div class="job-detail-role-copy">
+            <p class="job-detail-eyebrow">OPEN POSITION</p>
+            <h2>${escapeHtml(result.jobTitle || "Job opportunity")}</h2>
+            <p class="job-detail-company">${escapeHtml(companyName)}</p>
+          </div>
+        </div>
+        <dl class="job-detail-facts">
+          <div><dt>Location</dt><dd>${escapeHtml(result.location || "Not specified")}</dd></div>
+          <div><dt>Compensation</dt><dd>${result.salary ? `&#8377;${escapeHtml(result.salary)}` : "Not specified"}</dd></div>
+          <div><dt>Employment</dt><dd>${escapeHtml(result.jobType || "Not specified")}</dd></div>
+          <div><dt>Experience</dt><dd>${experience}</dd></div>
+        </dl>
+        <section class="job-detail-description" aria-labelledby="jobDescriptionHeading">
+          <h3 id="jobDescriptionHeading">About the role</h3>
+          <p>${escapeHtml(result.jobDescription || "The employer has not added a description yet.")}</p>
+        </section>
+        <div class="job-detail-skills-grid">
+          <section class="job-detail-skill-section" aria-labelledby="requiredSkillsHeading">
+            <div class="job-detail-section-heading"><h3 id="requiredSkillsHeading">Required skills</h3><span>Core qualifications</span></div>
+            ${renderSkillTags(result.requiredSkills, "No required skills listed")}
+          </section>
+          <section class="job-detail-skill-section preferred" aria-labelledby="preferredSkillsHeading">
+            <div class="job-detail-section-heading"><h3 id="preferredSkillsHeading">Preferred skills</h3><span>Helpful extras</span></div>
+            ${renderSkillTags(result.preferredSkills, "No preferred skills listed")}
+          </section>
+        </div>
       `;
-
-
     } catch (error) {
 
       console.error(
@@ -1720,6 +1801,8 @@ if (jobDetails) {
           return;
         }
 
+        saveJobBtn.disabled = true;
+        saveJobBtn.textContent = "Saving...";
 
         try {
 
@@ -1754,12 +1837,18 @@ if (jobDetails) {
             await response.json();
 
 
-          document.getElementById(
-            "message"
-          ).innerHTML =
-            result.success
-              ? `<p class="success">${escapeHtml(result.message)}</p>`
-              : `<p class="error">${escapeHtml(result.message)}</p>`;
+          const alreadySaved = /already saved/i.test(result.message || "");
+          const saved = result.success || alreadySaved;
+          document.getElementById("message").innerHTML = saved
+            ? `<p class="success">${escapeHtml(alreadySaved ? "This role is already in your saved jobs." : result.message)}</p>`
+            : `<p class="error">${escapeHtml(result.message || "Unable to save this role.")}</p>`;
+          if (saved) {
+            saveJobBtn.disabled = true;
+            saveJobBtn.textContent = "Saved";
+          } else {
+            saveJobBtn.disabled = false;
+            saveJobBtn.textContent = "Save Job";
+          }
 
 
         } catch (error) {
@@ -1774,6 +1863,8 @@ if (jobDetails) {
             "message"
           ).innerHTML =
             '<p class="error">Error saving job.</p>';
+          saveJobBtn.disabled = false;
+          saveJobBtn.textContent = "Save Job";
         }
 
       }
@@ -1867,6 +1958,8 @@ if (jobDetails) {
             applyJobBtn.textContent =
               "✓ Applied";
 
+            applyJobBtn.disabled = true;
+
 
           } else {
 
@@ -1876,12 +1969,10 @@ if (jobDetails) {
               `<p class="error">${escapeHtml(result.message)}</p>`;
 
 
-            applyJobBtn.disabled =
-              false;
+            applyJobBtn.disabled = response.status === 409;
 
 
-            applyJobBtn.textContent =
-              "📩 Apply Now";
+              applyJobBtn.textContent = "Applied";
           }
 
 
@@ -1967,7 +2058,7 @@ if (jobDetails) {
           ) {
 
             atsResult.innerHTML =
-              '<p class="error">Upload a PDF or DOCX resume from <a href="profile.html?v=20261025-learning-plan-v2">your profile</a>, then return here to analyze it.</p>';
+              '<p class="error">Upload a PDF or DOCX resume from <a href="profile.html?v=20261026-saved-resume-v2">your profile</a>, then return here to analyze it.</p>';
 
             return;
           }
@@ -1995,7 +2086,8 @@ if (jobDetails) {
                   JSON.stringify({
                     resume_text: resumeResult.resumeText,
                     job_text: jobText,
-                    required_skills: currentJob.requiredSkills || ""
+                    required_skills: currentJob.requiredSkills || "",
+                    preferred_skills: currentJob.preferredSkills || ""
                   })
 
               }
@@ -2041,13 +2133,20 @@ if (jobDetails) {
           }).join("");
           const signals = atsData.signals || {};
           const requirementEvidence = atsData.requirements_evidence || [];
-          const evidenceCards = requirementEvidence.map((item) => `
+          const preferredSkillFallback = (atsData.preferred_skills || []).length
+            ? "None of the listed preferred skills were detected."
+            : "No preferred skills were provided for this job.";
+          const renderEvidence = (item, category) => `
             <article class="ats-evidence-item">
-              <div class="ats-evidence-heading"><strong>${escapeHtml(item.requirement || "Requirement")}</strong><span class="ats-evidence-status ${item.status === "matched" ? "is-matched" : "is-missing"}">${item.status === "matched" ? "Exact skill found" : "Not explicitly found"}</span></div>
+              <div class="ats-evidence-heading"><strong>${escapeHtml(item.requirement || "Requirement")}</strong><span class="ats-evidence-status ${item.status === "matched" ? "is-matched" : "is-missing"}">${category} · ${item.status === "matched" ? "Exact skill found" : "Not explicitly found"}</span></div>
               ${(item.resume_evidence || []).length
                 ? `<ul>${item.resume_evidence.map((excerpt) => `<li><q>${escapeHtml(excerpt)}</q></li>`).join("")}</ul>`
                 : `<p>${escapeHtml(item.explanation || "No exact skill phrase was found in the extracted resume text.")}</p>`}
-            </article>`).join("");
+            </article>`;
+          const evidenceCards = [
+            ...requirementEvidence.map((item) => renderEvidence(item, "Required")),
+            ...(atsData.preferred_evidence || []).map((item) => renderEvidence(item, "Preferred"))
+          ].join("");
           const semanticAnalysis = atsData.semantic_analysis || {};
           const semanticEvidence = (semanticAnalysis.matches || []).slice(0, 8).map((item) => `
             <article class="ats-semantic-item">
@@ -2065,7 +2164,9 @@ if (jobDetails) {
               <section class="ats-metrics-grid" aria-label="Analysis breakdown">${metricCards}</section>
               <div class="ats-analysis-columns">
                 <section><h3>Required skills found</h3>${chips(atsData.matched_skills, "matched", "No listed skills were detected in the resume text.")}</section>
-                <section><h3>Skills to review</h3>${chips(atsData.missing_skills, "missing", "All listed required skills were detected.")}</section>
+                <section><h3>Required skills to review</h3>${chips(atsData.missing_skills, "missing", "All listed required skills were detected.")}</section>
+                <section><h3>Preferred skills found</h3>${chips(atsData.matched_preferred_skills, "matched", preferredSkillFallback)}</section>
+                <section><h3>Optional preferred skills to review</h3>${chips(atsData.missing_preferred_skills, "missing", "No optional preferred skills remain to review.")}</section>
               </div>
               <section class="ats-evidence-section">
                 <div class="ats-section-heading"><div><span class="ats-overline">TRACEABLE RESULTS</span><h3>Why each skill was matched</h3></div></div>
@@ -2408,7 +2509,13 @@ if (employerJobsContainer) {
       if (!jobsResponse.ok || !jobsResult.success) throw new Error("Could not load jobs");
 
       const jobs = Object.values(jobsResult.jobs || {});
+      const postedCount = document.getElementById("dashboardPostedJobCount");
+      const applicationCount = document.getElementById("dashboardEmployerApplicationCount");
+      const pendingCount = document.getElementById("dashboardPendingCount");
+      if (postedCount) postedCount.textContent = String(jobs.length);
       if (!jobs.length) {
+        if (applicationCount) applicationCount.textContent = "0";
+        if (pendingCount) pendingCount.textContent = "0";
         jobsList.innerHTML = '<div class="empty-state"><h3>No jobs posted yet</h3><p>Your applications will appear here after you post a job.</p><a href="post-job.html">Post your first job</a></div>';
         return;
       }
@@ -2423,6 +2530,8 @@ if (employerJobsContainer) {
         </article>
       `).join("");
 
+      let totalApplications = 0;
+      let applicationsToReview = 0;
       await Promise.all(jobs.map(async (job) => {
         const list = jobsList.querySelector(`[data-applicants-for="${Number(job.id)}"]`);
         const count = jobsList.querySelector(`[data-count-for="${Number(job.id)}"]`);
@@ -2431,6 +2540,10 @@ if (employerJobsContainer) {
           const result = await response.json();
           if (!response.ok || !result.success) throw new Error("Could not load applicants");
           const applicants = result.applicants || [];
+          totalApplications += applicants.length;
+          applicationsToReview += applicants.filter((applicant) =>
+            !["Shortlisted", "Rejected"].includes(applicant.status)
+          ).length;
           count.textContent = `${applicants.length} ${applicants.length === 1 ? "application" : "applications"}`;
           list.innerHTML = applicants.length ? applicants.map((applicant) => {
             const accepted = applicant.status === "Shortlisted";
@@ -2457,6 +2570,8 @@ if (employerJobsContainer) {
           list.innerHTML = '<p class="error">Could not load applications. Try refreshing the page.</p>';
         }
       }));
+      if (applicationCount) applicationCount.textContent = String(totalApplications);
+      if (pendingCount) pendingCount.textContent = String(applicationsToReview);
     } catch (error) {
       jobsList.innerHTML = '<p class="error">Could not load your jobs. Check that the Java API is running.</p>';
     }
@@ -2499,6 +2614,8 @@ if (applicationUpdates) {
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error("Could not load updates");
       const applications = result.applications || [];
+      const applicationsCount = document.getElementById("dashboardApplicationsCount");
+      if (applicationsCount) applicationsCount.textContent = String(applications.length);
       applicationUpdates.innerHTML = applications.length ? applications.map((application) => {
         const decided = application.status === "Shortlisted" || application.status === "Rejected";
         const state = application.status === "Shortlisted" ? "Accepted" : application.status === "Rejected" ? "Not selected" : "Under review";
@@ -2518,4 +2635,24 @@ if (applicationUpdates) {
   }
   loadApplicationUpdates();
   window.setInterval(loadApplicationUpdates, 30000);
+}
+
+const dashboardSavedCount = document.getElementById("dashboardSavedCount");
+const dashboardResumeStatus = document.getElementById("dashboardResumeStatus");
+const dashboardSeekerId = localStorage.getItem("jobSeekerId");
+if ((dashboardSavedCount || dashboardResumeStatus) && dashboardSeekerId) {
+  Promise.all([
+    fetch(`${JAVA_API}/saved-jobs/${encodeURIComponent(dashboardSeekerId)}`).then((response) => response.ok ? response.json() : null),
+    fetch(`${JAVA_API}/resume/${encodeURIComponent(dashboardSeekerId)}`).then((response) => response.ok ? response.json() : null)
+  ]).then(([savedResult, resumeResult]) => {
+    if (dashboardSavedCount && savedResult?.success) {
+      dashboardSavedCount.textContent = String(savedResult.count ?? Object.keys(savedResult.jobs || {}).length);
+    }
+    if (dashboardResumeStatus) {
+      dashboardResumeStatus.textContent = resumeResult?.success ? "Ready" : "Not uploaded";
+      dashboardResumeStatus.classList.toggle("is-missing", !resumeResult?.success);
+    }
+  }).catch(() => {
+    if (dashboardResumeStatus) dashboardResumeStatus.textContent = "Unavailable";
+  });
 }

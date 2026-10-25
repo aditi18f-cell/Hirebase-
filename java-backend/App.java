@@ -51,6 +51,7 @@ public class App {
 
         post("/save-job", JobRoutes::saveJob);
         get("/saved-jobs/:jobSeekerId", JobRoutes::getSavedJobs);
+        delete("/saved-jobs/:jobSeekerId/:jobId", JobRoutes::removeSavedJob);
 
         get("/employer-jobs/:employerId", JobRoutes::getEmployerJobs);
         put("/update-job/:jobId", JobRoutes::updateJob);

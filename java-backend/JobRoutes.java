@@ -779,6 +779,44 @@ public class JobRoutes {
     }
 
 
+    // Remove a saved role for one job seeker.
+    public static Object removeSavedJob(Request request, Response response) {
+        try {
+            int jobSeekerId = Integer.parseInt(request.params(":jobSeekerId"));
+            int jobId = Integer.parseInt(request.params(":jobId"));
+            if (jobSeekerId <= 0 || jobId <= 0) {
+                response.status(400);
+                return gson.toJson(Map.of("success", false, "message", "Invalid account or job ID."));
+            }
+
+            try (Connection connection = DbConnect.getConnection()) {
+                if (connection == null) {
+                    response.status(500);
+                    return gson.toJson(Map.of("success", false, "message", "Database connection failed."));
+                }
+                try (PreparedStatement statement = connection.prepareStatement(
+                        "DELETE FROM saved_jobs WHERE job_seeker_id = ? AND job_id = ?")) {
+                    statement.setInt(1, jobSeekerId);
+                    statement.setInt(2, jobId);
+                    int rows = statement.executeUpdate();
+                    if (rows == 0) {
+                        response.status(404);
+                        return gson.toJson(Map.of("success", false, "message", "This role is not in your saved jobs."));
+                    }
+                }
+            }
+
+            return gson.toJson(Map.of("success", true, "message", "Role removed from your saved jobs."));
+        } catch (NumberFormatException e) {
+            response.status(400);
+            return gson.toJson(Map.of("success", false, "message", "Invalid account or job ID."));
+        } catch (Exception e) {
+            response.status(500);
+            return gson.toJson(Map.of("success", false, "message", "Unable to remove this role right now."));
+        }
+    }
+
+
     // ==================== EMPLOYER JOBS ====================
 
     public static Object getEmployerJobs(

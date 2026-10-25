@@ -420,14 +420,19 @@ def ats_score():
         normalized_resume = canonicalize_analysis_text(resume_text)
         normalized_job = canonicalize_analysis_text(job_text)
         explicit_skills = skill_list(data.get('required_skills') or [])
+        preferred_skills = skill_list(data.get('preferred_skills') or [])
         required_skills = explicit_skills or {
             skill: skill.replace('.', ' ').title()
             for skill in extract_known_skills(job_text)
         }
         required_items = list(required_skills.items())
+        preferred_items = list(preferred_skills.items())
         matched_skills = [label for key, label in required_items if contains_skill(resume_text, key)]
         missing_skills = [label for key, label in required_items if not contains_skill(resume_text, key)]
         requirements_evidence = exact_skill_evidence(resume_text, required_items)
+        preferred_evidence = exact_skill_evidence(resume_text, preferred_items)
+        matched_preferred_skills = [label for key, label in preferred_items if contains_skill(resume_text, key)]
+        missing_preferred_skills = [label for key, label in preferred_items if not contains_skill(resume_text, key)]
         skill_score = len(matched_skills) / len(required_items) * 100 if required_items else 0.0
 
         keywords = keyword_list(job_text)
@@ -494,6 +499,12 @@ def ats_score():
                 'positive', 'Required skills detected',
                 'Your resume contains all listed skills detected for this role. Keep the supporting examples specific.'
             ))
+        if missing_preferred_skills:
+            suggestions.append(make_suggestion(
+                'low', 'Consider preferred skills',
+                'These are optional qualifications. If you have relevant experience, make it visible: '
+                + ', '.join(missing_preferred_skills[:8]) + '.'
+            ))
         if missing_keywords:
             suggestions.append(make_suggestion(
                 'medium', 'Improve role keyword coverage',
@@ -559,6 +570,10 @@ def ats_score():
             'matched_skills': matched_skills,
             'missing_skills': missing_skills,
             'requirements_evidence': requirements_evidence,
+            'preferred_skills': [label for _, label in preferred_items],
+            'matched_preferred_skills': matched_preferred_skills,
+            'missing_preferred_skills': missing_preferred_skills,
+            'preferred_evidence': preferred_evidence,
             'semantic_analysis': semantic,
             'matched_keywords': matched_keywords,
             'missing_keywords': missing_keywords,

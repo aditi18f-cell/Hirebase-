@@ -55,6 +55,22 @@ class ResumeAnalysisTests(unittest.TestCase):
         self.assertEqual(by_requirement['JavaScript']['status'], 'missing')
         self.assertEqual(by_requirement['JavaScript']['resume_evidence'], [])
 
+    def test_ats_reports_preferred_skills_separately_from_required_score(self):
+        response = self.client.post('/ats-score', json={
+            'resume_text': 'Skills: Java and Docker.',
+            'job_text': 'Build services with Java. Docker is preferred.',
+            'required_skills': 'Java',
+            'preferred_skills': 'Docker, Kubernetes'
+        })
+
+        self.assertEqual(response.status_code, 200)
+        result = response.get_json()
+        self.assertEqual(result['matched_skills'], ['Java'])
+        self.assertEqual(result['matched_preferred_skills'], ['Docker'])
+        self.assertEqual(result['missing_preferred_skills'], ['Kubernetes'])
+        self.assertEqual(result['dimensions']['skill_coverage'], 100.0)
+        self.assertEqual(result['preferred_evidence'][0]['status'], 'matched')
+
     def test_semantic_match_shows_source_phrases_but_does_not_claim_exact_skill(self):
         class DeterministicSentenceModel:
             def encode(self, sentences, **kwargs):

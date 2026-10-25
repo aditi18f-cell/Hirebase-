@@ -8,6 +8,7 @@ import spark.Route;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,6 +73,10 @@ public class JobSeekerRoutes {
 
             return gson.toJson(result);
 
+        } catch (SQLIntegrityConstraintViolationException e) {
+            response.status(409);
+            return gson.toJson(Map.of("success", false,
+                    "message", "An account with this email already exists. Sign in or use another email."));
         } catch (Exception e) {
             e.printStackTrace();
 

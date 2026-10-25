@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/employer.css" />
-      <link rel="stylesheet" href="css/polish.css?v=20261025-learning-plan-v2" />
+      <link rel="stylesheet" href="css/polish.css?v=20261026-dashboard-workspace-v1" />
   </head>
 
   <body>
@@ -24,163 +24,56 @@
       <nav class="app-nav">
         <a href="employer-dashboard.html" class="active">Dashboard</a>
         <a href="post-job.html">Post a Job</a>
-        <a href="employer-profile.html?v=20261025-learning-plan-v2">Company Profile</a>
+        <a href="employer-profile.html?v=20261026-dashboard-workspace-v1">Company Profile</a>
         <a href="login.html" onclick="localStorage.clear()">Logout</a>
       </nav>
     </header>
 
     <!-- ================= MAIN ================= -->
 
-    <main class="employer-page">
-      <!-- Welcome -->
-
+    <main class="employer-page employer-dashboard">
       <section class="employer-welcome">
-        <div>
-          <p class="employer-label">EMPLOYER DASHBOARD</p>
-
-          <h1>Manage Your Hiring</h1>
-
-          <p>
-            Keep your openings organized and review the people who apply.
-          </p>
-          <p class="dashboard-account-identity" id="dashboardAccountIdentity">Loading your signed-in account…</p>
+        <div class="employer-welcome-copy">
+          <p class="employer-label">HIRING WORKSPACE</p>
+          <h1>Hiring overview</h1>
+          <p>Manage your open roles and review candidates in one place.</p>
+          <p class="dashboard-account-identity" id="dashboardAccountIdentity">Loading account details...</p>
         </div>
-
-        <button id="postJobBtn" class="employer-primary-button">
-          + Post New Job
-        </button>
+        <button id="postJobBtn" class="employer-primary-button">Post a job</button>
       </section>
-
-      <!-- ================= MESSAGE ================= -->
 
       <div id="message"></div>
 
-      <!-- ================= QUICK OVERVIEW ================= -->
-
-      <section class="employer-stats">
-        <div class="employer-stat-card">
-          <div class="employer-stat-icon">💼</div>
-
-          <div>
-            <span class="employer-stat-title">Post a job</span>
-            <span class="employer-stat-description">
-              Publish an opening with clear requirements
-            </span>
-          </div>
-        </div>
-
-        <div class="employer-stat-card">
-          <div class="employer-stat-icon">👥</div>
-
-          <div>
-            <span class="employer-stat-title">Review applicants</span>
-            <span class="employer-stat-description">
-              Open submissions and view attached resumes
-            </span>
-          </div>
-        </div>
-
-        <div class="employer-stat-card">
-          <div class="employer-stat-icon">📊</div>
-
-          <div>
-            <span class="employer-stat-title">Track decisions</span>
-            <span class="employer-stat-description">
-              Accept or reject each application
-            </span>
-          </div>
-        </div>
+      <section class="employer-stats" aria-label="Hiring overview">
+        <article class="employer-stat-card">
+          <span class="employer-stat-kicker">OPEN ROLES</span>
+          <strong id="dashboardPostedJobCount">--</strong>
+          <span class="employer-stat-description">Jobs posted by your company</span>
+        </article>
+        <article class="employer-stat-card">
+          <span class="employer-stat-kicker">APPLICATIONS</span>
+          <strong id="dashboardEmployerApplicationCount">--</strong>
+          <span class="employer-stat-description">Candidates across your roles</span>
+        </article>
+        <article class="employer-stat-card">
+          <span class="employer-stat-kicker">TO REVIEW</span>
+          <strong id="dashboardPendingCount">--</strong>
+          <span class="employer-stat-description">Awaiting a decision</span>
+        </article>
       </section>
 
-      <!-- ================= JOB MANAGEMENT ================= -->
-
-      <section class="employer-section">
+      <section class="employer-section" aria-labelledby="employerJobsTitle">
         <div class="employer-section-heading">
           <div>
-            <p class="section-label">JOB MANAGEMENT</p>
-
-            <h2>Your Posted Jobs &amp; Applicants</h2>
-
-            <p>New applications appear here with a resume link and controls to record your decision.</p>
+            <p class="section-label">YOUR OPENINGS</p>
+            <h2 id="employerJobsTitle">Roles and applicants</h2>
+            <p>Review candidate details, open resumes, and record your decisions.</p>
           </div>
-
-          <a href="post-job.html" class="secondary-action">
-            + Post Another Job
-          </a>
+          <a href="post-job.html" class="secondary-action">Create another role</a>
         </div>
-
         <div id="employerJobs">
           <div id="jobsList">
-            <!-- Jobs will be displayed here dynamically -->
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= EMPLOYER TOOLS ================= -->
-
-      <section class="employer-tools">
-        <div class="employer-tool-card">
-          <div class="employer-tool-icon">📝</div>
-
-          <div>
-            <h3>Post a Job</h3>
-
-            <p>
-              Create a new job opening with description, experience and required
-              skills.
-            </p>
-
-            <a href="post-job.html"> Create Job → </a>
-          </div>
-        </div>
-
-        <div class="employer-tool-card">
-          <div class="employer-tool-icon">🏢</div>
-
-          <div>
-            <h3>Company Profile</h3>
-
-            <p>Keep your company information updated for job seekers.</p>
-
-            <a href="employer-profile.html?v=20261025-learning-plan-v2"> Manage Profile → </a>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= HIRING FLOW ================= -->
-
-      <section class="employer-workflow">
-        <div class="employer-section-heading">
-          <div>
-            <p class="section-label">HIRING WORKFLOW</p>
-
-            <h2>How Hirebase Helps Employers</h2>
-          </div>
-        </div>
-
-        <div class="employer-workflow-grid">
-          <div class="employer-workflow-card">
-            <span>1</span>
-
-            <h3>Post a Job</h3>
-
-            <p>Add the job description, experience, required skills, and optional preferred skills.</p>
-          </div>
-
-          <div class="employer-workflow-card">
-            <span>2</span>
-
-            <h3>Receive Candidates</h3>
-
-            <p>Job seekers can discover your posted opportunities.</p>
-          </div>
-
-          <div class="employer-workflow-card">
-            <span>3</span>
-
-            <h3>Review Applicants</h3>
-
-            <p>Read each application and resume, then accept or reject it. Candidates see the decision on their dashboard.</p>
+            <p>Loading your roles...</p>
           </div>
         </div>
       </section>
@@ -198,6 +91,6 @@
       <p>2026 Hirebase</p>
     </footer>
 
-    <script src="script.js?v=20261025-learning-plan-v2"></script>
+    <script src="script.js?v=20261026-saved-resume-v2"></script>
   </body>
 </html>

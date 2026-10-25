@@ -11,7 +11,8 @@
 
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/auth.css" />
-      <link rel="stylesheet" href="css/polish.css?v=20261025-learning-plan-v2" />
+      <link rel="stylesheet" href="css/polish.css?v=20261026-login-company-polish-v1" />
+      <link rel="stylesheet" href="css/auth-premium.css?v=20261026-auth-premium-v1" />
   </head>
 
   <body>
@@ -31,20 +32,9 @@
         </p>
 
         <div class="auth-features">
-          <div class="auth-feature">
-            <span>✓</span>
-            Smart job matching
-          </div>
-
-          <div class="auth-feature">
-            <span>✓</span>
-            ATS resume analysis
-          </div>
-
-          <div class="auth-feature">
-            <span>✓</span>
-            Skill gap analysis
-          </div>
+          <div class="auth-feature"><span aria-hidden="true">01</span>Smart job matching</div>
+          <div class="auth-feature"><span aria-hidden="true">02</span>Resume analysis and feedback</div>
+          <div class="auth-feature"><span aria-hidden="true">03</span>Role-specific skill plans</div>
         </div>
       </div>
 
@@ -66,6 +56,7 @@
               type="email"
               id="email"
               name="email"
+              autocomplete="email"
               placeholder="Enter your email"
               required
             />
@@ -78,12 +69,13 @@
               type="password"
               id="password"
               name="password"
+              autocomplete="current-password"
               placeholder="Enter your password"
               required
             />
           </div>
 
-          <p class="login-hint">We’ll open the right account for you.</p>
+          <p class="login-hint">We will open the account associated with your email.</p>
 
           <button type="submit" class="auth-button">Login</button>
         </form>
@@ -98,10 +90,10 @@
           <a href="register.html"> Create an account </a>
         </p>
 
-        <a href="../index.html" class="back-home"> ← Back to Hirebase </a>
+        <a href="../index.html" class="back-home">Back to Hirebase</a>
       </div>
     </div>
 
-    <script src="script.js?v=20261025-learning-plan-v2"></script>
+    <script src="script.js?v=20261026-login-company-polish-v1"></script>
   </body>
 </html>
