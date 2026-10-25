@@ -13,6 +13,133 @@ function escapeHtml(value) {
   })[character]);
 }
 
+function getSignedInJobSeekerId() {
+  const role = localStorage.getItem("userType");
+  if (role && role !== "job_seeker") return null;
+  return localStorage.getItem("jobSeekerId") || (role === "job_seeker" ? localStorage.getItem("userId") : null);
+}
+
+function initializeAccountIdentity() {
+  const identityCard = document.getElementById("accountIdentityCard");
+  const dashboardIdentity = document.getElementById("dashboardAccountIdentity");
+  const appHeader = document.querySelector(".app-header");
+  if (!identityCard && !dashboardIdentity && !appHeader) return;
+  const appNav = appHeader?.querySelector(".app-nav");
+  let sessionChip = document.getElementById("appSessionIdentity");
+  if (appHeader && !sessionChip) {
+    sessionChip = document.createElement("span");
+    sessionChip.id = "appSessionIdentity";
+    sessionChip.className = "app-session-chip";
+    sessionChip.hidden = true;
+    const navigation = appHeader.querySelector(".app-nav");
+    if (navigation) appHeader.insertBefore(sessionChip, navigation);
+  }
+
+  const accountId = localStorage.getItem("userId")
+    || localStorage.getItem("jobSeekerId")
+    || localStorage.getItem("employerId");
+  const userType = localStorage.getItem("userType")
+    || (localStorage.getItem("jobSeekerId") ? "job_seeker" : null)
+    || (localStorage.getItem("employerId") ? "employer" : null);
+  const roleName = userType === "job_seeker" ? "Job Seeker" : userType === "employer" ? "Employer" : "Account";
+  const keys = ["userId", "userName", "userEmail", "userType", "jobSeekerId", "employerId"];
+
+  function renderAppNavigation(role) {
+    if (!appNav) return;
+    const page = window.location.pathname.split("/").pop();
+    const items = role === "job_seeker"
+      ? [["Dashboard", "job-seeker-dashboard.html"], ["Find Jobs", "search-jobs.html"], ["Saved Jobs", "saved-jobs.html"], ["My Profile", "profile.html?v=20261025-quality-pass"]]
+      : role === "employer"
+        ? [["Dashboard", "employer-dashboard.html"], ["Post a Job", "post-job.html"], ["Company Profile", "employer-profile.html?v=20261025-quality-pass"]]
+        : [["Home", "../index.html"], ["Find Jobs", "search-jobs.html"], ["Login", "login.html"], ["Create Account", "register.html"]];
+    const activePage = page === "job-details.html" ? "search-jobs.html" : page;
+    appNav.innerHTML = items.map(([label, href]) =>
+      `<a href="${href}"${href.split("?")[0] === activePage ? ' class="active" aria-current="page"' : ""}>${label}</a>`
+    ).join("");
+    if (role) {
+      const logout = document.createElement("a");
+      logout.href = "login.html";
+      logout.textContent = "Logout";
+      logout.addEventListener("click", (event) => {
+        event.preventDefault();
+        keys.forEach((key) => localStorage.removeItem(key));
+        window.location.href = "login.html";
+      });
+      appNav.appendChild(logout);
+    }
+  }
+
+  function renderIdentity({ name = "", email = "", id = "", role = roleName, status = "Active account" } = {}) {
+    const verified = Boolean(id) && status !== "Signed out" && status !== "Account no longer exists";
+    renderAppNavigation(verified ? userType : null);
+    if (sessionChip) {
+      sessionChip.hidden = !verified;
+      sessionChip.textContent = verified ? `${role} · ${email || name || "Account"} · ID ${id}` : "";
+      sessionChip.title = verified ? `${role} account · ${email || name || ""} · ID ${id}` : "";
+    }
+    if (identityCard) {
+      const avatar = document.getElementById("accountAvatar");
+      const nameNode = document.getElementById("accountDisplayName");
+      const emailNode = document.getElementById("accountDisplayEmail");
+      const roleNode = document.getElementById("accountRoleLabel");
+      const idNode = document.getElementById("accountIdValue");
+      const statusNode = document.getElementById("accountIdentityStatus");
+      const loginLink = document.getElementById("accountIdentityLogin");
+      if (avatar) avatar.textContent = (name || "?").trim().charAt(0).toUpperCase() || "?";
+      if (nameNode) nameNode.textContent = name || "No signed-in account";
+      if (emailNode) emailNode.textContent = email || (id
+        ? "Sign out and sign in again to refresh the account email"
+        : "Sign in to view account details");
+      if (roleNode) roleNode.textContent = role;
+      if (idNode) idNode.textContent = verified ? id : "—";
+      if (statusNode) statusNode.textContent = status;
+      if (loginLink) loginLink.hidden = verified;
+    }
+    if (dashboardIdentity) {
+      dashboardIdentity.textContent = verified
+        ? `${role} · ${email || name || "Account"} · ID ${id}`
+        : status === "Signed out" ? "No account is signed in" : "Checking account status…";
+    }
+  }
+
+  if (!accountId || !["job_seeker", "employer"].includes(userType)) {
+    renderIdentity({ status: "Signed out", role: "No active account" });
+    return;
+  }
+
+  // Use the successful login saved in this browser immediately. The API check
+  // below can invalidate it, but an older running backend must not hide the session.
+  renderIdentity({
+    name: localStorage.getItem("userName") || "",
+    email: localStorage.getItem("userEmail") || "",
+    id: accountId,
+    status: "Active account"
+  });
+
+  fetch(`${JAVA_API}/account-exists/${encodeURIComponent(userType)}/${encodeURIComponent(accountId)}`)
+    .then((response) => response.ok ? response.json() : null)
+    .then((result) => {
+      if (!result) {
+        // Keep the signed-in UI. The protected API action will show a useful
+        // backend error if the account is actually unavailable.
+        return;
+      }
+      if (result?.success && result.exists) {
+        const name = result.userName || localStorage.getItem("userName") || "";
+        const email = result.email || localStorage.getItem("userEmail") || "";
+        localStorage.setItem("userName", name);
+        localStorage.setItem("userEmail", email);
+        renderIdentity({ name, email, id: accountId, status: "Active account" });
+      } else if (result?.success && !result.exists) {
+        keys.forEach((key) => localStorage.removeItem(key));
+        renderIdentity({ status: "Account no longer exists", role: "Signed out" });
+      }
+    })
+    .catch(() => { /* Keep the locally established login state. */ });
+}
+
+initializeAccountIdentity();
+
 // ==================== POST JOB BUTTON ====================
 
 const postJobBtn = document.getElementById("postJobBtn");
@@ -195,6 +322,8 @@ if (loginForm) {
           "userName",
           result.userName || ""
         );
+
+        localStorage.setItem("userEmail", result.email || userData.email || "");
 
 
         localStorage.setItem(
@@ -1469,7 +1598,7 @@ if (jobDetails) {
   async function compareJobSkills() {
     const resultBox = document.getElementById("jobSkillGapResult");
     const button = document.getElementById("checkJobSkillGapBtn");
-    const jobSeekerId = localStorage.getItem("jobSeekerId");
+    const jobSeekerId = getSignedInJobSeekerId();
     if (!jobSeekerId) {
       resultBox.innerHTML = '<p class="error">Sign in as a job seeker to compare your profile.</p>';
       return;
@@ -1521,10 +1650,7 @@ if (jobDetails) {
       "click",
       async function () {
 
-        const jobSeekerId =
-          localStorage.getItem(
-            "jobSeekerId"
-          );
+        const jobSeekerId = getSignedInJobSeekerId();
 
 
         if (!jobSeekerId) {
@@ -1607,10 +1733,7 @@ if (jobDetails) {
       "click",
       async function () {
 
-        const jobSeekerId =
-          localStorage.getItem(
-            "jobSeekerId"
-          );
+        const jobSeekerId = getSignedInJobSeekerId();
 
 
         if (!jobSeekerId) {
@@ -1740,19 +1863,17 @@ if (jobDetails) {
     checkAtsBtn.addEventListener(
       "click",
       async function () {
+        const originalLabel = checkAtsBtn.textContent;
 
         try {
 
-          const jobSeekerId =
-            localStorage.getItem(
-              "jobSeekerId"
-            );
+          const jobSeekerId = getSignedInJobSeekerId();
 
 
           if (!jobSeekerId) {
 
             atsResult.innerHTML =
-              '<p class="error">Please login as a Job Seeker first.</p>';
+              '<p class="error">Sign in with a Job Seeker account to analyze your resume. <a href="login.html">Sign in</a></p>';
 
             return;
           }
@@ -1768,7 +1889,9 @@ if (jobDetails) {
 
 
           atsResult.innerHTML =
-            "<p>Checking ATS score...</p>";
+            "<p>Preparing your resume analysis...</p>";
+          checkAtsBtn.disabled = true;
+          checkAtsBtn.textContent = "Analyzing resume...";
 
 
           const resumeResponse =
@@ -1787,7 +1910,7 @@ if (jobDetails) {
           ) {
 
             atsResult.innerHTML =
-              '<p class="error">Please upload your resume first.</p>';
+              '<p class="error">Upload a PDF or DOCX resume from <a href="profile.html?v=20261025-quality-pass">your profile</a>, then return here to analyze it.</p>';
 
             return;
           }
@@ -1811,15 +1934,11 @@ if (jobDetails) {
                     "application/json"
                 },
 
-                body:
+              body:
                   JSON.stringify({
-
-                    resume_text:
-                      resumeResult.resumeText,
-
-                    job_text:
-                      jobText
-
+                    resume_text: resumeResult.resumeText,
+                    job_text: jobText,
+                    required_skills: currentJob.requiredSkills || ""
                   })
 
               }
@@ -1830,64 +1949,64 @@ if (jobDetails) {
             await atsResponse.json();
 
 
-          if (
-            atsData.score !==
-            undefined
-          ) {
-
-            let suggestionsHTML =
-              "";
-
-
-            if (
-              atsData.suggestions &&
-              atsData.suggestions.length > 0
-            ) {
-
-              suggestionsHTML = `
-
-                <h3>
-                  Suggestions
-                </h3>
-
-                <ul>
-
-                  ${atsData.suggestions
-                    .map(
-                      (suggestion) =>
-                        `<li>${escapeHtml(suggestion)}</li>`
-                    )
-                    .join("")}
-
-                </ul>
-
-              `;
-            }
-
-
-            atsResult.innerHTML = `
-
-              <div class="ats-result-card">
-                <div class="analysis-summary"><strong>${Number(atsData.score).toFixed(1)}%</strong><span>resume alignment estimate</span></div>
-                <p>This estimate checks job wording in your resume (80%) and common resume sections (20%). It is not an employer ATS result or a hiring prediction.</p>
-                <div class="analysis-breakdown"><span>Keyword coverage <strong>${Number(atsData.keyword_score || 0).toFixed(1)}%</strong></span><span>Resume sections <strong>${Number(atsData.section_score || 0).toFixed(1)}%</strong></span></div>
-                <h3>Terms found in your resume</h3>
-                ${atsData.matched_keywords && atsData.matched_keywords.length ? `<ul class="analysis-chips matched">${atsData.matched_keywords.map((term) => `<li>${escapeHtml(term)}</li>`).join("")}</ul>` : '<p class="analysis-empty">No detected job terms yet.</p>'}
-                <h3>Terms not found</h3>
-                ${atsData.missing_keywords && atsData.missing_keywords.length ? `<ul class="analysis-chips missing">${atsData.missing_keywords.map((term) => `<li>${escapeHtml(term)}</li>`).join("")}</ul>` : '<p class="analysis-empty">No missing terms detected.</p>'}
-                <p><strong>Resume sections found:</strong> ${escapeHtml((atsData.sections_found || []).join(", ") || "None detected")}</p>
-                ${suggestionsHTML}
-                <p class="analysis-note">${escapeHtml(atsData.score_note || "An estimate only. Review your resume and the role yourself.")}</p>
-              </div>
-
-            `;
-
-
-          } else {
-
-            atsResult.innerHTML =
-              '<p class="error">Unable to calculate ATS score.</p>';
+          if (!atsResponse.ok || atsData.score === undefined) {
+            throw new Error(atsData.error || "Unable to calculate resume alignment.");
           }
+
+          const score = Math.max(0, Math.min(100, Number(atsData.score) || 0));
+          const dimensions = atsData.dimensions || {};
+          const weights = atsData.weights || {};
+          const metrics = [
+            ["Required skills", dimensions.skill_coverage, `${weights.skill_coverage || 0}% of score`],
+            ["Job keywords", dimensions.keyword_coverage, `${weights.keyword_coverage || 0}% of score`],
+            ["Text similarity", dimensions.text_similarity, `${weights.text_similarity || 0}% of score`],
+            ["Resume structure", dimensions.resume_structure, `${weights.resume_structure || 0}% of score`]
+          ].filter(([, value, weight]) => value !== null && value !== undefined && !weight.startsWith("0%"));
+          const metricCards = metrics.map(([label, value, weight]) => `
+            <article class="ats-metric-card">
+              <span>${escapeHtml(label)}</span>
+              <strong>${Number(value).toFixed(0)}%</strong>
+              <small>${escapeHtml(weight)}</small>
+              <div class="ats-metric-track"><i style="width:${Math.max(0, Math.min(100, Number(value)))}%"></i></div>
+            </article>`).join("");
+          const chips = (items, kind, empty) => items && items.length
+            ? `<ul class="analysis-chips ${kind}">${items.map((term) => `<li>${escapeHtml(term)}</li>`).join("")}</ul>`
+            : `<p class="analysis-empty">${empty}</p>`;
+          const suggestions = (atsData.suggestions || []).map((item) => {
+            const suggestion = typeof item === "string"
+              ? { priority: "medium", title: "Recommendation", detail: item }
+              : item;
+            return `<article class="ats-suggestion-item priority-${escapeHtml(suggestion.priority || "medium")}">
+              <span>${escapeHtml((suggestion.priority || "medium").toUpperCase())}</span>
+              <div><h4>${escapeHtml(suggestion.title || "Recommendation")}</h4><p>${escapeHtml(suggestion.detail || "")}</p></div>
+            </article>`;
+          }).join("");
+          const signals = atsData.signals || {};
+
+          atsResult.innerHTML = `
+            <div class="ats-result-card">
+              <div class="ats-score-hero">
+                <div class="ats-score-ring" style="--score:${score}%"><div><strong>${score.toFixed(0)}<small>%</small></strong><span>alignment</span></div></div>
+                <div class="ats-score-copy"><span class="ats-overline">YOUR ROLE ALIGNMENT</span><h3>${escapeHtml(atsData.score_label || "Resume analysis complete")}</h3><p>Compared your resume with this job's requirements and description.</p><span class="ats-method-pill">Python NLP | scikit-learn TF-IDF</span></div>
+              </div>
+              <section class="ats-metrics-grid" aria-label="Analysis breakdown">${metricCards}</section>
+              <div class="ats-analysis-columns">
+                <section><h3>Required skills found</h3>${chips(atsData.matched_skills, "matched", "No listed skills were detected in the resume text.")}</section>
+                <section><h3>Skills to review</h3>${chips(atsData.missing_skills, "missing", "All listed required skills were detected.")}</section>
+              </div>
+              <details class="ats-keyword-details"><summary>View keyword comparison</summary>
+                <h4>Detected in your resume</h4>${chips(atsData.matched_keywords, "matched", "No job terms detected yet.")}
+                <h4>Not detected</h4>${chips(atsData.missing_keywords, "missing", "No missing terms detected.")}
+              </details>
+              <section class="ats-signals"><h3>Resume quality signals</h3><div class="ats-signal-grid">
+                <div><strong>${Number(signals.resume_word_count || 0).toLocaleString()}</strong><span>words analyzed</span></div>
+                <div><strong>${Number(signals.sections_found || 0)} / ${Number(signals.sections_total || 0)}</strong><span>sections found</span></div>
+                <div><strong>${Number(signals.quantified_lines || 0)}</strong><span>measurable results</span></div>
+                <div><strong>${Number(signals.action_verb_uses || 0)}</strong><span>action verb uses</span></div>
+              </div></section>
+              <section class="ats-recommendations"><div class="ats-section-heading"><div><span class="ats-overline">NEXT STEPS</span><h3>Ways to strengthen your resume</h3></div><span class="ats-recommendation-count">${(atsData.suggestions || []).length} tips</span></div>${suggestions || '<p class="analysis-empty">No recommendations available.</p>'}</section>
+              <p class="analysis-note">${escapeHtml(atsData.score_note || "An estimate only. Review your resume and the role yourself.")}</p>
+            </div>`;
 
 
         } catch (error) {
@@ -1898,8 +2017,10 @@ if (jobDetails) {
           );
 
 
-          atsResult.innerHTML =
-            '<p class="error">Unable to connect to the ML service.</p>';
+          atsResult.innerHTML = `<p class="error">${escapeHtml(error.message || "Unable to connect to the Python analysis service. Check that it is running on port 5000.")}</p>`;
+        } finally {
+          checkAtsBtn.disabled = false;
+          checkAtsBtn.textContent = originalLabel;
         }
 
       }
@@ -1940,6 +2061,8 @@ logoutLinks.forEach((link) => {
         localStorage.removeItem(
           "userName"
         );
+
+        localStorage.removeItem("userEmail");
 
         localStorage.removeItem(
           "userType"
@@ -2000,6 +2123,9 @@ if (employerProfileForm) {
       "industry"
     );
 
+  const foundedYear = document.getElementById("foundedYear");
+  const companyWebsite = document.getElementById("companyWebsite");
+
 
   const messageDiv =
     document.getElementById(
@@ -2057,6 +2183,9 @@ if (employerProfileForm) {
           result.profile.industry ||
           "";
 
+        foundedYear.value = result.profile.foundedYear || "";
+        companyWebsite.value = result.profile.website || "";
+
       }
 
 
@@ -2098,6 +2227,8 @@ if (employerProfileForm) {
         employerId:
           parseInt(employerId),
 
+        companyName: companyName.value.trim(),
+
         companyDescription:
           companyDescription.value,
 
@@ -2105,7 +2236,11 @@ if (employerProfileForm) {
           companySize.value,
 
         industry:
-          industry.value
+          industry.value,
+
+        foundedYear: foundedYear.value || null,
+
+        website: companyWebsite.value.trim()
 
       };
 

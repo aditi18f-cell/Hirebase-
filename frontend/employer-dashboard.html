@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -9,7 +12,7 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/employer.css" />
-      <link rel="stylesheet" href="css/polish.css" />
+      <link rel="stylesheet" href="css/polish.css?v=20261025-quality-pass" />
   </head>
 
   <body>
@@ -21,7 +24,7 @@
       <nav class="app-nav">
         <a href="employer-dashboard.html" class="active">Dashboard</a>
         <a href="post-job.html">Post a Job</a>
-        <a href="employer-profile.html">Company Profile</a>
+        <a href="employer-profile.html?v=20261025-quality-pass">Company Profile</a>
         <a href="login.html" onclick="localStorage.clear()">Logout</a>
       </nav>
     </header>
@@ -40,6 +43,7 @@
           <p>
             Keep your openings organized and review the people who apply.
           </p>
+          <p class="dashboard-account-identity" id="dashboardAccountIdentity">Loading your signed-in account…</p>
         </div>
 
         <button id="postJobBtn" class="employer-primary-button">
@@ -138,7 +142,7 @@
 
             <p>Keep your company information updated for job seekers.</p>
 
-            <a href="employer-profile.html"> Manage Profile → </a>
+            <a href="employer-profile.html?v=20261025-quality-pass"> Manage Profile → </a>
           </div>
         </div>
       </section>
@@ -194,6 +198,6 @@
       <p>2026 Hirebase</p>
     </footer>
 
-    <script src="script.js?v=20261002-app-review-state"></script>
+    <script src="script.js?v=20261025-quality-pass"></script>
   </body>
 </html>

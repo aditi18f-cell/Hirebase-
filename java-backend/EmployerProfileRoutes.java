@@ -25,6 +25,9 @@ public class EmployerProfileRoutes {
             int employerId =
                     json.get("employerId").getAsInt();
 
+            String companyName = json.has("companyName") && !json.get("companyName").isJsonNull()
+                    ? json.get("companyName").getAsString().trim() : "";
+
             String companyDescription =
                     json.get("companyDescription").getAsString();
 
@@ -33,6 +36,12 @@ public class EmployerProfileRoutes {
 
             String industry =
                     json.get("industry").getAsString();
+
+            Integer foundedYear = json.has("foundedYear") && !json.get("foundedYear").isJsonNull()
+                    && !json.get("foundedYear").getAsString().isBlank()
+                    ? json.get("foundedYear").getAsInt() : null;
+            String website = json.has("website") && !json.get("website").isJsonNull()
+                    ? json.get("website").getAsString().trim() : "";
 
 
             Connection conn =
@@ -63,6 +72,7 @@ public class EmployerProfileRoutes {
                         "UPDATE employer_profiles " +
                         "SET company_description = ?, " +
                         "company_size = ?, " +
+                        "founded_year = ?, " +
                         "industry = ? " +
                         "WHERE employer_id = ?";
 
@@ -79,15 +89,10 @@ public class EmployerProfileRoutes {
                         companySize
                 );
 
-                updateStmt.setString(
-                        3,
-                        industry
-                );
-
-                updateStmt.setInt(
-                        4,
-                        employerId
-                );
+                if (foundedYear == null) updateStmt.setNull(3, java.sql.Types.INTEGER);
+                else updateStmt.setInt(3, foundedYear);
+                updateStmt.setString(4, industry);
+                updateStmt.setInt(5, employerId);
 
 
                 int rowsAffected =
@@ -126,8 +131,8 @@ public class EmployerProfileRoutes {
                 // Create new company profile
                 String insertSql =
                         "INSERT INTO employer_profiles " +
-                        "(employer_id, company_description, company_size, industry) " +
-                        "VALUES (?, ?, ?, ?)";
+                        "(employer_id, company_description, company_size, founded_year, industry) " +
+                        "VALUES (?, ?, ?, ?, ?)";
 
                 PreparedStatement insertStmt =
                         conn.prepareStatement(insertSql);
@@ -147,10 +152,9 @@ public class EmployerProfileRoutes {
                         companySize
                 );
 
-                insertStmt.setString(
-                        4,
-                        industry
-                );
+                if (foundedYear == null) insertStmt.setNull(4, java.sql.Types.INTEGER);
+                else insertStmt.setInt(4, foundedYear);
+                insertStmt.setString(5, industry);
 
 
                 int rowsAffected =
@@ -183,6 +187,14 @@ public class EmployerProfileRoutes {
                             "Failed to create company profile"
                     );
                 }
+            }
+
+            try (PreparedStatement websiteStmt = conn.prepareStatement(
+                    "UPDATE employer SET company_name = ?, website = ? WHERE id = ?")) {
+                websiteStmt.setString(1, companyName);
+                websiteStmt.setString(2, website);
+                websiteStmt.setInt(3, employerId);
+                websiteStmt.executeUpdate();
             }
 
 
@@ -241,9 +253,13 @@ public class EmployerProfileRoutes {
                     "SELECT " +
                     "e.id AS employer_id, " +
                     "e.company_name, " +
+                    "e.email, " +
+                    "e.phone, " +
+                    "e.website, " +
                     "ep.id AS profile_id, " +
                     "ep.company_description, " +
                     "ep.company_size, " +
+                    "ep.founded_year, " +
                     "ep.industry " +
                     "FROM employer e " +
                     "LEFT JOIN employer_profiles ep " +
@@ -295,6 +311,10 @@ public class EmployerProfileRoutes {
                         rs.getString("company_name")
                 );
 
+                profile.put("email", rs.getString("email"));
+                profile.put("phone", rs.getString("phone"));
+                profile.put("website", rs.getString("website"));
+
                 profile.put(
                         "companyDescription",
                         rs.getString("company_description")
@@ -304,6 +324,8 @@ public class EmployerProfileRoutes {
                         "companySize",
                         rs.getString("company_size")
                 );
+
+                profile.put("foundedYear", rs.getObject("founded_year"));
 
                 profile.put(
                         "industry",

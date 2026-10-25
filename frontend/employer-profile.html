@@ -4,6 +4,9 @@
 <head>
 
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
     <meta
         name="viewport"
@@ -16,7 +19,7 @@
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="css/employer-profile.css">
 
-    <link rel="stylesheet" href="css/polish.css" />
+    <link rel="stylesheet" href="css/polish.css?v=20261025-quality-pass" />
   </head>
 
 
@@ -45,7 +48,7 @@
             </a>
 
             <a
-                href="employer-profile.html"
+                href="employer-profile.html?v=20261025-quality-pass"
                 class="active"
             >
                 Company Profile
@@ -92,6 +95,21 @@
                 class="back-button"
             >Back to dashboard</a>
 
+        </section>
+
+        <section class="account-identity-card profile-account-hero" id="accountIdentityCard" aria-labelledby="accountIdentityHeading" aria-live="polite">
+            <div class="account-avatar" id="accountAvatar" aria-hidden="true">?</div>
+            <div class="account-identity-main">
+                <p class="account-eyebrow" id="accountIdentityHeading">SIGNED-IN ACCOUNT</p>
+                <h2 id="accountDisplayName">Loading account…</h2>
+                <p id="accountDisplayEmail">Checking account details</p>
+                <a id="accountIdentityLogin" href="login.html" hidden>Sign in to view your account</a>
+            </div>
+            <dl class="account-identity-meta">
+                <div><dt>Account type</dt><dd id="accountRoleLabel">Employer</dd></div>
+                <div><dt>Account ID</dt><dd><code id="accountIdValue">—</code></dd></div>
+                <div><dt>Status</dt><dd id="accountIdentityStatus">Checking…</dd></div>
+            </dl>
         </section>
 
 
@@ -246,6 +264,18 @@
 
                     </div>
 
+                    <div class="form-group">
+                        <label for="foundedYear">Founded year</label>
+                        <input type="number" id="foundedYear" min="1800" max="2100" placeholder="Example: 2018">
+                        <small>Optional. Enter the year your company was founded.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="companyWebsite">Company website</label>
+                        <input type="url" id="companyWebsite" placeholder="https://example.com">
+                        <small>Optional. Use a complete URL, including https://.</small>
+                    </div>
+
 
                 </div>
 
@@ -358,7 +388,7 @@
     </footer>
 
 
-    <script src="script.js"></script>
+    <script src="script.js?v=20261025-quality-pass"></script>
 
 </body>
 

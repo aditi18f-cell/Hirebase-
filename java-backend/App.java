@@ -25,6 +25,7 @@ public class App {
         // ==================== AUTHENTICATION ====================
 
         post("/login", AuthenticationRoutes::login);
+        get("/account-exists/:userType/:userId", AuthenticationRoutes::accountExists);
         post("/register-job-seeker", JobSeekerRoutes.registerJobSeeker);
         post("/login-job-seeker", JobSeekerRoutes.loginJobSeeker);
 

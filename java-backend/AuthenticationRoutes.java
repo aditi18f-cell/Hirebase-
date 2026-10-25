@@ -64,9 +64,50 @@ public final class AuthenticationRoutes {
         }
     }
 
+    public static Object accountExists(Request request, Response response) {
+        String userType = request.params(":userType");
+        String table;
+        if ("job_seeker".equals(userType)) {
+            table = "job_seeker";
+        } else if ("employer".equals(userType)) {
+            table = "employer";
+        } else {
+            response.status(400);
+            return gson.toJson(Map.of("success", false, "message", "Invalid account type."));
+        }
+
+        try {
+            int userId = Integer.parseInt(request.params(":userId"));
+            if (userId <= 0) {
+                response.status(400);
+                return gson.toJson(Map.of("success", false, "message", "Invalid account ID."));
+            }
+
+            try (Connection connection = DbConnect.getConnection()) {
+                if (connection == null) {
+                    response.status(500);
+                    return gson.toJson(Map.of("success", false, "message", "Unable to connect to the database."));
+                }
+                try (PreparedStatement statement = connection.prepareStatement(
+                        "SELECT 1 FROM " + table + " WHERE id = ? LIMIT 1")) {
+                    statement.setInt(1, userId);
+                    try (ResultSet result = statement.executeQuery()) {
+                        return gson.toJson(Map.of("success", true, "exists", result.next()));
+                    }
+                }
+            }
+        } catch (NumberFormatException e) {
+            response.status(400);
+            return gson.toJson(Map.of("success", false, "message", "Invalid account ID."));
+        } catch (Exception e) {
+            response.status(500);
+            return gson.toJson(Map.of("success", false, "message", "Unable to check the account right now."));
+        }
+    }
+
     private static Map<String, Object> findAccount(Connection connection, String table, String nameColumn,
                                                     String email, String password, String userType) throws Exception {
-        String sql = "SELECT id, " + nameColumn + ", password FROM " + table + " WHERE email = ?";
+        String sql = "SELECT id, " + nameColumn + ", email, password FROM " + table + " WHERE email = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, email);
             try (ResultSet result = statement.executeQuery()) {
@@ -74,6 +115,7 @@ public final class AuthenticationRoutes {
                 Map<String, Object> account = new LinkedHashMap<>();
                 account.put("userId", result.getInt("id"));
                 account.put("userName", result.getString(nameColumn));
+                account.put("email", result.getString("email"));
                 account.put("userType", userType);
                 return account;
             }

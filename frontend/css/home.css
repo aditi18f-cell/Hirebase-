@@ -684,6 +684,10 @@ button {
     margin-bottom: 8px;
 }
 
+.footer-column a[hidden] {
+    display: none !important;
+}
+
 .footer-column a:hover {
     color: #ffffff;
 }
