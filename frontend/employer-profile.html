@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Company Profile - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/employer-profile.css">
+
+    <link rel="stylesheet" href="css/polish.css?v=20261026-login-company-polish-v1" />
+  </head>
+
+
+<body class="employer-company-page">
+
+    <!-- ================= HEADER ================= -->
+
+    <header class="app-header">
+
+        <a
+            href="employer-dashboard.html"
+            class="app-logo"
+        >
+            Hire<span>base</span>
+        </a>
+
+
+        <nav class="app-nav">
+
+            <a href="employer-dashboard.html">
+                Dashboard
+            </a>
+
+            <a href="post-job.html">
+                Post a Job
+            </a>
+
+            <a
+                href="employer-profile.html?v=20261026-login-company-polish-v1"
+                class="active"
+            >
+                Company Profile
+            </a>
+
+            <a
+                href="login.html"
+                onclick="localStorage.clear()"
+            >
+                Logout
+            </a>
+
+        </nav>
+
+    </header>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="employer-profile-page">
+
+
+        <!-- ================= PAGE HEADER ================= -->
+
+        <section class="employer-profile-header">
+
+            <div>
+
+                <p class="profile-label">COMPANY PROFILE</p>
+
+                <h1>
+                    Company profile
+                </h1>
+
+                <p>
+                    This information appears alongside your job openings and helps applicants understand who is hiring.
+                </p>
+
+            </div>
+
+
+            <a
+                href="employer-dashboard.html"
+                class="back-button"
+            >Back to dashboard</a>
+
+        </section>
+
+        <section class="account-identity-card profile-account-hero" id="accountIdentityCard" aria-labelledby="accountIdentityHeading" aria-live="polite">
+            <div class="account-avatar" id="accountAvatar" aria-hidden="true">?</div>
+            <div class="account-identity-main">
+                <p class="account-eyebrow" id="accountIdentityHeading">SIGNED-IN ACCOUNT</p>
+                <h2 id="accountDisplayName">Loading employer account</h2>
+                <p id="accountDisplayEmail">Checking account details</p>
+                <a id="accountIdentityLogin" href="login.html" hidden>Sign in to view your account</a>
+            </div>
+            <dl class="account-identity-meta">
+                <div><dt>Account type</dt><dd id="accountRoleLabel">Employer</dd></div>
+                <div><dt>Account ID</dt><dd><code id="accountIdValue">Loading</code></dd></div>
+                <div><dt>Status</dt><dd id="accountIdentityStatus">Checking</dd></div>
+            </dl>
+        </section>
+
+
+        <!-- ================= MESSAGE ================= -->
+
+        <div id="message"></div>
+
+
+        <!-- ================= COMPANY PROFILE CARD ================= -->
+
+        <section class="company-profile-card">
+
+
+            <!-- CARD HEADER -->
+
+            <div class="company-profile-heading">
+                <div>
+                    <p class="section-label">
+                        COMPANY INFORMATION
+                    </p>
+                    <h2>
+                        Company Details
+                    </h2>
+                    <p>
+                        Add a concise introduction that candidates can read before they apply.
+                    </p>
+                </div>
+            </div>
+
+
+            <!-- ================= FORM ================= -->
+
+            <form id="employerProfileForm">
+
+
+                <!-- ================= COMPANY NAME ================= -->
+
+                <div class="form-group">
+
+                    <label for="companyName">
+                        Company Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="companyName"
+                        placeholder="Enter your company name"
+                        required
+                    >
+
+                    <small>
+                        Enter the name of your company.
+                    </small>
+
+                </div>
+
+
+                <!-- ================= COMPANY DESCRIPTION ================= -->
+
+                <div class="form-group">
+
+                    <label for="companyDescription">
+                        Company Description
+                    </label>
+
+                    <textarea
+                        id="companyDescription"
+                        rows="6"
+                        placeholder="Example: Hirebase Technologies is a software company that develops web applications and digital solutions..."
+                        required
+                    ></textarea>
+
+                    <small>
+                        Include what your organization does and what candidates should know before applying.
+                    </small>
+
+                </div>
+
+
+                <!-- ================= COMPANY SIZE + INDUSTRY ================= -->
+
+                <div class="company-form-grid">
+
+
+                    <!-- COMPANY SIZE -->
+
+                    <div class="form-group">
+
+                        <label for="companySize">
+                            Company Size
+                        </label>
+
+                        <select
+                            id="companySize"
+                            required
+                        >
+
+                            <option value="">
+                                Select company size
+                            </option>
+
+                            <option value="1-10">
+                                1-10 employees
+                            </option>
+
+                            <option value="11-50">
+                                11-50 employees
+                            </option>
+
+                            <option value="51-200">
+                                51-200 employees
+                            </option>
+
+                            <option value="201-500">
+                                201-500 employees
+                            </option>
+
+                            <option value="500+">
+                                500+ employees
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- INDUSTRY -->
+
+                    <div class="form-group">
+
+                        <label for="industry">
+                            Industry
+                        </label>
+
+                        <input
+                            type="text"
+                            id="industry"
+                            placeholder="Example: Information Technology"
+                            required
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="foundedYear">Founded year</label>
+                        <input type="number" id="foundedYear" min="1800" max="2100" placeholder="Example: 2018">
+                        <small>Optional. Enter the year your company was founded.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="companyWebsite">Company website</label>
+                        <input type="url" id="companyWebsite" placeholder="https://example.com">
+                        <small>Optional. Use a complete URL, including https://.</small>
+                    </div>
+
+
+                </div>
+
+
+                <!-- ================= SAVE BUTTON ================= -->
+
+                <div class="save-profile-area">
+
+                    <button
+                        type="submit"
+                        class="save-profile-button"
+                    >Save company profile</button>
+
+                </div>
+
+
+            </form>
+
+        </section>
+
+
+        <!-- ================= EMPLOYER ACTIONS ================= -->
+
+        <section class="company-actions-card">
+
+            <div>
+
+                <p class="section-label">
+                    EMPLOYER TOOLS
+                </p>
+
+                <h2>
+                    Manage Your Hiring
+                </h2>
+
+                <p>
+                    Create job postings and manage candidates
+                    from your employer dashboard.
+                </p>
+
+            </div>
+
+
+            <div class="company-action-buttons">
+
+                <a
+                    href="post-job.html"
+                    class="company-action-button"
+                >Post a job</a>
+
+
+                <a
+                    href="employer-dashboard.html"
+                    class="company-action-button secondary"
+                >View dashboard</a>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer class="app-footer">
+
+        <div>
+
+            <strong>
+                Hire<span>base</span>
+            </strong>
+
+            <p>
+                Smart job portal with career tools.
+            </p>
+
+        </div>
+
+
+        <p>2026 Hirebase</p>
+
+    </footer>
+
+
+    <script src="script.js?v=20261026-login-company-polish-v1"></script>
+
+</body>
+
+</html>

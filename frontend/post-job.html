@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Post Job - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/post-job.css" />
+      <link rel="stylesheet" href="css/polish.css?v=20261026-post-job-premium-v1" />
+  </head>
+
+  <body class="employer-post-page">
+
+    <header class="app-header">
+      <a href="employer-dashboard.html" class="app-logo">Hire<span>base</span></a>
+      <nav class="app-nav" aria-label="Employer navigation">
+        <a href="employer-dashboard.html">Dashboard</a>
+        <a href="post-job.html" class="active">Post a Job</a>
+        <a href="employer-profile.html?v=20261026-search-nav-polish-v1">Company Profile</a>
+        <a href="login.html" onclick="localStorage.clear()">Logout</a>
+      </nav>
+    </header>
+
+    <div class="post-job-container">
+
+      <div class="post-job-header">
+        <div>
+          <p class="post-job-eyebrow">EMPLOYER WORKSPACE <span aria-hidden="true">/</span> NEW OPENING</p>
+          <h1>Publish a role</h1>
+          <p>Give candidates the details they need to understand the opportunity and decide if it is right for them.</p>
+        </div>
+        <a class="post-job-back-link" href="employer-dashboard.html">Back to dashboard</a>
+      </div>
+
+      <div class="post-job-card">
+
+        <div id="message" class="post-job-message" aria-live="polite"></div>
+
+        <form id="jobForm" class="post-job-form">
+
+          <input
+            type="hidden"
+            id="employerId"
+            name="employerId"
+          />
+
+          <section class="post-job-form-section full-width" aria-labelledby="postRoleHeading">
+            <div class="post-job-section-heading">
+              <span class="post-job-section-number">01</span>
+              <div><p>ROLE OVERVIEW</p><h2 id="postRoleHeading">The position</h2><span>Start with a clear title and a useful summary of the work.</span></div>
+            </div>
+            <div class="form-group full-width">
+              <label for="jobTitle">Job title</label>
+              <input type="text" id="jobTitle" name="jobTitle" placeholder="For example, Senior Java Developer" autocomplete="organization-title" required />
+            </div>
+            <div class="form-group full-width">
+              <label for="jobDescription">Description <span>Responsibilities, scope, and team context</span></label>
+              <textarea id="jobDescription" name="jobDescription" rows="6" placeholder="Describe the role, what the person will work on, and the outcomes they will own." required></textarea>
+              <small class="form-hint">Specific responsibilities help candidates understand the day-to-day work.</small>
+            </div>
+          </section>
+
+          <section class="post-job-form-section full-width" aria-labelledby="postSkillsHeading">
+            <div class="post-job-section-heading">
+              <span class="post-job-section-number">02</span>
+              <div><p>QUALIFICATIONS</p><h2 id="postSkillsHeading">Skills and experience</h2><span>Separate must-have skills from additional strengths.</span></div>
+            </div>
+            <div class="post-job-skills-grid">
+              <div class="form-group">
+                <label for="requiredSkills">Required skills</label>
+                <textarea id="requiredSkills" name="requiredSkills" rows="4" placeholder="Java, Spring Boot, MySQL" required></textarea>
+                <small class="form-hint">Comma-separated. List the skills candidates need to do the job.</small>
+              </div>
+              <div class="form-group">
+                <label for="preferredSkills">Preferred skills <span>Optional</span></label>
+                <textarea id="preferredSkills" name="preferredSkills" rows="4" placeholder="Docker, AWS, accessibility testing"></textarea>
+                <small class="form-hint">Comma-separated. Helpful extras, not required qualifications.</small>
+              </div>
+            </div>
+          </section>
+
+          <section class="post-job-form-section full-width" aria-labelledby="postTermsHeading">
+            <div class="post-job-section-heading">
+              <span class="post-job-section-number">03</span>
+              <div><p>ROLE DETAILS</p><h2 id="postTermsHeading">Workplace and compensation</h2><span>Set expectations up front so the right candidates can find this role.</span></div>
+            </div>
+            <div class="post-job-details-grid">
+              <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" name="location" placeholder="City, region, or remote" autocomplete="address-level2" required />
+              </div>
+              <div class="form-group">
+                <label for="salary">Annual salary <span>INR</span></label>
+                <input type="number" id="salary" name="salary" min="0" step="0.01" placeholder="For example, 600000" inputmode="decimal" required />
+              </div>
+              <div class="form-group">
+                <label for="jobType">Employment type</label>
+                <select id="jobType" name="jobType" required>
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Contract">Contract</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="experienceRequired">Experience <span>Years required</span></label>
+                <input type="number" id="experienceRequired" name="experienceRequired" min="0" step="1" placeholder="0 for entry-level" inputmode="numeric" required />
+              </div>
+            </div>
+          </section>
+
+
+          <div class="post-job-actions full-width">
+
+            <button type="submit">
+              Publish job
+            </button>
+
+            <a href="employer-dashboard.html">
+              Cancel
+            </a>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+
+    <script src="script.js?v=20261026-post-job-premium-v1"></script>
+
+  </body>
+</html>

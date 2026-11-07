@@ -1,0 +1,359 @@
+/* =========================================================
+   HIREBASE - EMPLOYER / COMPANY PROFILE
+   ========================================================= */
+
+
+/* ================= MAIN PAGE ================= */
+
+.employer-profile-page {
+    width: 90%;
+    max-width: 1100px;
+
+    margin: 40px auto 60px;
+}
+
+
+/* ================= PAGE HEADER ================= */
+
+.employer-profile-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 30px;
+
+    margin-bottom: 30px;
+}
+
+.profile-label {
+    margin-bottom: 8px;
+
+    color: #2563eb;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    letter-spacing: 1px;
+}
+
+.employer-profile-header h1 {
+    margin-bottom: 8px;
+
+    color: #111827;
+
+    font-size: 34px;
+    line-height: 1.2;
+}
+
+.employer-profile-header p:not(.profile-label) {
+    color: #64748b;
+
+    font-size: 15px;
+}
+
+
+/* ================= BACK BUTTON ================= */
+
+.back-button {
+    display: inline-block;
+
+    padding: 11px 17px;
+
+    background: #ffffff;
+    color: #2563eb;
+
+    border: 1px solid #2563eb;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    text-decoration: none;
+
+    white-space: nowrap;
+}
+
+.back-button:hover {
+    background: #eff6ff;
+
+    text-decoration: none;
+}
+
+
+/* ================= PROFILE CARD ================= */
+
+.company-profile-card {
+    padding: 30px;
+
+    margin-bottom: 25px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 16px;
+
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.05);
+}
+
+
+/* ================= CARD HEADING ================= */
+
+.company-profile-heading {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 16px;
+
+    padding-bottom: 25px;
+
+    margin-bottom: 25px;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.company-profile-icon {
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    background: #eff6ff;
+
+    border-radius: 12px;
+
+    font-size: 23px;
+}
+
+.company-profile-heading .section-label {
+    margin-bottom: 5px;
+}
+
+.company-profile-heading h2 {
+    margin-bottom: 5px;
+
+    font-size: 23px;
+}
+
+.company-profile-heading p:last-child {
+    color: #64748b;
+
+    font-size: 14px;
+}
+
+
+/* ================= FORM ================= */
+
+#employerProfileForm {
+    width: 100%;
+}
+
+#employerProfileForm .form-group {
+    margin-bottom: 22px;
+}
+
+#employerProfileForm label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #374151;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+#employerProfileForm textarea {
+    width: 100%;
+
+    min-height: 140px;
+
+    resize: vertical;
+}
+
+#employerProfileForm small {
+    display: block;
+
+    margin-top: 6px;
+
+    color: #94a3b8;
+
+    font-size: 12px;
+}
+
+
+/* ================= FORM GRID ================= */
+
+.company-form-grid {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 20px;
+}
+
+.company-form-grid .form-group {
+    margin-bottom: 0 !important;
+}
+
+
+/* ================= SAVE AREA ================= */
+
+.save-profile-area {
+    display: flex;
+    justify-content: flex-end;
+
+    padding-top: 22px;
+
+    margin-top: 22px;
+
+    border-top: 1px solid #e5e7eb;
+}
+
+.save-profile-button {
+    padding: 12px 20px;
+
+    background: #2563eb;
+    color: #ffffff;
+
+    border: none;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.save-profile-button:hover {
+    background: #1d4ed8;
+}
+
+
+/* ================= INFORMATION CARD ================= */
+
+.company-info-card {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 16px;
+
+    padding: 22px;
+
+    background: #eff6ff;
+
+    border: 1px solid #dbeafe;
+
+    border-radius: 14px;
+}
+
+.info-icon {
+    width: 44px;
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    background: #ffffff;
+
+    border-radius: 10px;
+
+    font-size: 20px;
+}
+
+.company-info-card h3 {
+    margin-bottom: 6px;
+
+    color: #1e3a8a;
+
+    font-size: 16px;
+}
+
+.company-info-card p {
+    color: #64748b;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+
+/* ================= MESSAGE ================= */
+
+#message {
+    margin-bottom: 20px;
+}
+
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 800px) {
+
+    .employer-profile-page {
+        width: 92%;
+
+        margin-top: 30px;
+    }
+
+    .employer-profile-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .back-button {
+        width: 100%;
+
+        text-align: center;
+    }
+
+    .company-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .save-profile-area {
+        justify-content: stretch;
+    }
+
+    .save-profile-button {
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .company-profile-card {
+        padding: 20px;
+    }
+
+    .employer-profile-header h1 {
+        font-size: 28px;
+    }
+
+    .company-profile-heading {
+        gap: 12px;
+    }
+
+    .company-profile-icon {
+        width: 44px;
+        height: 44px;
+
+        font-size: 20px;
+    }
+
+    .company-info-card {
+        padding: 18px;
+    }
+
+}

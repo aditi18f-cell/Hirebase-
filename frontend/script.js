@@ -1,0 +1,2658 @@
+// Hirebase Frontend JavaScript
+
+const JAVA_API = "http://localhost:4567";
+const ML_API = "http://localhost:5000";
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
+}
+
+function getSignedInJobSeekerId() {
+  const role = localStorage.getItem("userType");
+  if (role && role !== "job_seeker") return null;
+  return localStorage.getItem("jobSeekerId") || (role === "job_seeker" ? localStorage.getItem("userId") : null);
+}
+
+function initializeAccountIdentity() {
+  const identityCard = document.getElementById("accountIdentityCard");
+  const dashboardIdentity = document.getElementById("dashboardAccountIdentity");
+  const appHeader = document.querySelector(".app-header");
+  if (!identityCard && !dashboardIdentity && !appHeader) return;
+  const appNav = appHeader?.querySelector(".app-nav");
+  const accountId = localStorage.getItem("userId")
+    || localStorage.getItem("jobSeekerId")
+    || localStorage.getItem("employerId");
+  const userType = localStorage.getItem("userType")
+    || (localStorage.getItem("jobSeekerId") ? "job_seeker" : null)
+    || (localStorage.getItem("employerId") ? "employer" : null);
+  const roleName = userType === "job_seeker" ? "Job Seeker" : userType === "employer" ? "Employer" : "Account";
+  const keys = ["userId", "userName", "userEmail", "userType", "jobSeekerId", "employerId"];
+
+  function renderAppNavigation(role) {
+    if (!appNav) return;
+    const page = window.location.pathname.split("/").pop();
+    const items = role === "job_seeker"
+      ? [["Dashboard", "job-seeker-dashboard.html"], ["Find Jobs", "search-jobs.html"], ["Saved Jobs", "saved-jobs.html"], ["My Profile", "profile.html?v=20261026-saved-resume-v2"]]
+      : role === "employer"
+        ? [["Dashboard", "employer-dashboard.html"], ["Post a Job", "post-job.html"], ["Company Profile", "employer-profile.html?v=20261026-saved-resume-v2"]]
+        : [["Home", "../index.html"], ["Find Jobs", "search-jobs.html"], ["Login", "login.html"], ["Create Account", "register.html"]];
+    const activePage = page === "job-details.html" ? "search-jobs.html" : page;
+    appNav.innerHTML = items.map(([label, href]) =>
+      `<a href="${href}"${href.split("?")[0] === activePage ? ' class="active" aria-current="page"' : ""}>${label}</a>`
+    ).join("");
+    if (role) {
+      const logout = document.createElement("a");
+      logout.href = "login.html";
+      logout.textContent = "Logout";
+      logout.addEventListener("click", (event) => {
+        event.preventDefault();
+        keys.forEach((key) => localStorage.removeItem(key));
+        window.location.href = "login.html";
+      });
+      appNav.appendChild(logout);
+    }
+  }
+
+  function renderIdentity({ name = "", email = "", id = "", role = roleName, status = "Active account" } = {}) {
+    const verified = Boolean(id) && status !== "Signed out" && status !== "Account no longer exists";
+    renderAppNavigation(verified ? userType : null);
+    if (identityCard) {
+      const avatar = document.getElementById("accountAvatar");
+      const nameNode = document.getElementById("accountDisplayName");
+      const emailNode = document.getElementById("accountDisplayEmail");
+      const roleNode = document.getElementById("accountRoleLabel");
+      const idNode = document.getElementById("accountIdValue");
+      const statusNode = document.getElementById("accountIdentityStatus");
+      const loginLink = document.getElementById("accountIdentityLogin");
+      if (avatar) avatar.textContent = (name || "?").trim().charAt(0).toUpperCase() || "?";
+      if (nameNode) nameNode.textContent = name || "No signed-in account";
+      if (emailNode) emailNode.textContent = email || (id
+        ? "Sign out and sign in again to refresh the account email"
+        : "Sign in to view account details");
+      if (roleNode) roleNode.textContent = role;
+      if (idNode) idNode.textContent = verified ? id : "—";
+      if (statusNode) statusNode.textContent = status;
+      if (loginLink) loginLink.hidden = verified;
+    }
+    if (dashboardIdentity) {
+      dashboardIdentity.textContent = verified
+        ? `${role} · ${email || name || "Account"} · ID ${id}`
+        : status === "Signed out" ? "No account is signed in" : "Checking account status…";
+    }
+  }
+
+  if (!accountId || !["job_seeker", "employer"].includes(userType)) {
+    renderIdentity({ status: "Signed out", role: "No active account" });
+    return;
+  }
+
+  // Use the successful login saved in this browser immediately. The API check
+  // below can invalidate it, but an older running backend must not hide the session.
+  renderIdentity({
+    name: localStorage.getItem("userName") || "",
+    email: localStorage.getItem("userEmail") || "",
+    id: accountId,
+    status: "Active account"
+  });
+
+  fetch(`${JAVA_API}/account-exists/${encodeURIComponent(userType)}/${encodeURIComponent(accountId)}`)
+    .then((response) => response.ok ? response.json() : null)
+    .then((result) => {
+      if (!result) {
+        // Keep the signed-in UI. The protected API action will show a useful
+        // backend error if the account is actually unavailable.
+        return;
+      }
+      if (result?.success && result.exists) {
+        const name = result.userName || localStorage.getItem("userName") || "";
+        const email = result.email || localStorage.getItem("userEmail") || "";
+        localStorage.setItem("userName", name);
+        localStorage.setItem("userEmail", email);
+        renderIdentity({ name, email, id: accountId, status: "Active account" });
+      } else if (result?.success && !result.exists) {
+        keys.forEach((key) => localStorage.removeItem(key));
+        renderIdentity({ status: "Account no longer exists", role: "Signed out" });
+      }
+    })
+    .catch(() => { /* Keep the locally established login state. */ });
+}
+
+initializeAccountIdentity();
+
+// ==================== POST JOB BUTTON ====================
+
+const postJobBtn = document.getElementById("postJobBtn");
+
+if (postJobBtn) {
+  postJobBtn.onclick = function () {
+    window.location.href = "post-job.html";
+  };
+}
+
+
+// ==================== REGISTRATION ====================
+
+const registerForm = document.getElementById("registerForm");
+
+if (registerForm) {
+
+  registerForm.addEventListener("submit", async function (e) {
+
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const userData = {};
+
+    for (let [key, value] of formData.entries()) {
+      userData[key] = value;
+    }
+
+    const selectedUserType = document.querySelector(
+      'input[name="userType"]:checked'
+    );
+
+    if (!selectedUserType) {
+
+      document.getElementById("message").innerHTML =
+        '<p class="error">Please select Job Seeker or Employer.</p>';
+
+      return;
+    }
+
+    const userType = selectedUserType.value;
+
+    userData.userType = userType;
+
+
+    if (userType === "employer") {
+
+      const companyName =
+        document.getElementById("companyName");
+
+      const website =
+        document.getElementById("website");
+
+      if (companyName) {
+        userData.companyName = companyName.value;
+      }
+
+      if (website) {
+        userData.website = website.value;
+      }
+    }
+
+
+    const registerUrl =
+      userType === "job_seeker"
+        ? `${JAVA_API}/register-job-seeker`
+        : `${JAVA_API}/register-employer`;
+
+
+    try {
+
+      const response = await fetch(registerUrl, {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(userData)
+
+      });
+
+
+      const result = await response.json();
+
+      const messageDiv =
+        document.getElementById("message");
+
+
+      if (result.success) {
+
+        messageDiv.innerHTML =
+          `<p class="success">${escapeHtml(result.message)}</p>`;
+
+        this.reset();
+
+      } else {
+
+        messageDiv.innerHTML =
+          `<p class="error">${escapeHtml(result.message)}</p>`;
+      }
+
+
+    } catch (error) {
+
+      console.error(
+        "Registration error:",
+        error
+      );
+
+      document.getElementById("message").innerHTML =
+        '<p class="error">Error during registration. Please try again.</p>';
+    }
+
+  });
+
+}
+
+
+// ==================== LOGIN ====================
+
+const loginForm =
+  document.getElementById("loginForm");
+
+if (loginForm) {
+
+  loginForm.addEventListener("submit", async function (e) {
+
+    e.preventDefault();
+
+    const formData =
+      new FormData(this);
+
+    const userData = {};
+
+    for (let [key, value] of formData.entries()) {
+      userData[key] = value;
+    }
+
+
+    try {
+
+      const response =
+        await fetch(`${JAVA_API}/login`, {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify(userData)
+
+        });
+
+
+      const result =
+        await response.json();
+
+
+      const messageDiv =
+        document.getElementById("message");
+      const userType = result.userType;
+
+
+      if (result.success) {
+
+        messageDiv.innerHTML =
+          `<p class="success">${escapeHtml(result.message)}</p>`;
+
+
+        localStorage.setItem(
+          "userId",
+          result.userId
+        );
+
+
+        localStorage.setItem(
+          "userName",
+          result.userName || ""
+        );
+
+        localStorage.setItem("userEmail", result.email || userData.email || "");
+
+
+        localStorage.setItem(
+          "userType",
+          result.userType || userType
+        );
+
+
+        if (userType === "job_seeker") {
+
+          localStorage.setItem(
+            "jobSeekerId",
+            result.userId
+          );
+
+          localStorage.removeItem(
+            "employerId"
+          );
+
+
+          alert(
+            `Welcome ${result.userName || ""}! You are now logged in.`
+          );
+
+
+          window.location.href =
+            "job-seeker-dashboard.html";
+
+
+        } else {
+
+          localStorage.setItem(
+            "employerId",
+            result.userId
+          );
+
+          localStorage.removeItem(
+            "jobSeekerId"
+          );
+
+
+          alert(
+            `Welcome ${result.userName || ""}! You are now logged in.`
+          );
+
+
+          window.location.href =
+            "employer-dashboard.html";
+        }
+
+
+      } else {
+
+        messageDiv.innerHTML =
+          `<p class="error">${escapeHtml(result.message)}</p>`;
+      }
+
+
+    } catch (error) {
+
+      console.error(
+        "Login error:",
+        error
+      );
+
+
+      document.getElementById("message").innerHTML =
+        '<p class="error">Unable to connect to the server. Make sure the Java backend is running.</p>';
+    }
+
+  });
+
+}
+
+
+// ==================== EMPLOYER REGISTRATION FIELDS ====================
+
+const userTypeRadios =
+  document.querySelectorAll(
+    'input[name="userType"]'
+  );
+
+
+userTypeRadios.forEach((radio) => {
+
+  radio.addEventListener("change", function () {
+
+    const companyNameGroup =
+      document.getElementById(
+        "companyNameGroup"
+      );
+
+
+    const websiteGroup =
+      document.getElementById(
+        "websiteGroup"
+      );
+
+
+    if (companyNameGroup) {
+
+      companyNameGroup.style.display =
+        this.value === "employer"
+          ? "block"
+          : "none";
+    }
+
+
+    if (websiteGroup) {
+
+      websiteGroup.style.display =
+        this.value === "employer"
+          ? "block"
+          : "none";
+    }
+
+  });
+
+});
+
+
+// ==================== JOB SEEKER PROFILE ====================
+
+const profileForm =
+  document.getElementById("profileForm");
+
+
+if (profileForm) {
+
+  const jobSeekerId =
+    localStorage.getItem("jobSeekerId");
+
+
+  const jobSeekerIdInput =
+    document.getElementById("jobSeekerId");
+
+
+  if (jobSeekerIdInput) {
+
+    jobSeekerIdInput.value =
+      jobSeekerId || "";
+  }
+
+  if (jobSeekerId) {
+    fetch(`${JAVA_API}/profile-job-seeker/${encodeURIComponent(jobSeekerId)}`)
+      .then((response) => response.json())
+      .then((result) => {
+        if (result.success) {
+          document.getElementById("education").value = result.education || "";
+          document.getElementById("experience").value = result.experience || "";
+          document.getElementById("skills").value = result.skills || "";
+        }
+      })
+      .catch((error) => console.error("Profile loading error:", error));
+  }
+
+
+  profileForm.addEventListener(
+    "submit",
+    async function (e) {
+
+      e.preventDefault();
+
+
+      if (!jobSeekerId) {
+
+        document.getElementById("message").innerHTML =
+          '<p class="error">Please login as a Job Seeker first.</p>';
+
+        return;
+      }
+
+
+      const profileData = {
+
+        jobSeekerId: jobSeekerId,
+
+        education:
+          document.getElementById(
+            "education"
+          ).value,
+
+        experience:
+          document.getElementById(
+            "experience"
+          ).value,
+
+        skills:
+          document.getElementById(
+            "skills"
+          ).value
+
+      };
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${JAVA_API}/profile-job-seeker`,
+            {
+
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify(profileData)
+
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        const messageDiv =
+          document.getElementById("message");
+
+
+        if (result.success) {
+
+          messageDiv.innerHTML =
+            `<p class="success">${escapeHtml(result.message)}</p>`;
+
+        } else {
+
+          messageDiv.innerHTML =
+            `<p class="error">${escapeHtml(result.message)}</p>`;
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "Profile save error:",
+          error
+        );
+
+
+        document.getElementById("message").innerHTML =
+          '<p class="error">Error saving profile. Please try again.</p>';
+      }
+
+    }
+  );
+
+}
+
+
+// ==================== RESUME ====================
+
+const uploadResumeButton =
+  document.getElementById(
+    "uploadResumeButton"
+  );
+
+
+if (uploadResumeButton) {
+
+  const resumeFile =
+    document.getElementById(
+      "resumeFile"
+    );
+
+
+  const resumeMessage =
+    document.getElementById(
+      "resumeMessage"
+    );
+
+
+  const resumeInfo =
+    document.getElementById(
+      "resumeInfo"
+    );
+
+
+  const jobSeekerId =
+    localStorage.getItem(
+      "jobSeekerId"
+    );
+
+
+  async function loadResume() {
+
+    if (!jobSeekerId) {
+
+      if (resumeInfo) {
+
+        resumeInfo.innerHTML =
+          "<p>Please login as a Job Seeker first.</p>";
+      }
+
+      return;
+    }
+
+
+    try {
+
+      const response =
+        await fetch(
+          `${JAVA_API}/resume/${jobSeekerId}`
+        );
+
+
+      const result =
+        await response.json();
+
+
+      if (result.success) {
+
+        resumeInfo.innerHTML = `
+          <article class="uploaded-resume-card">
+            <p class="uploaded-resume-name"><strong>${escapeHtml(result.fileName || "Resume file")}</strong></p>
+            <p class="uploaded-resume-date">Uploaded ${escapeHtml(result.uploadDate || "date unavailable")}</p>
+            <button type="button" class="resume-delete-button" onclick="deleteResume(${Number(result.resumeId)})">Remove resume</button>
+          </article>`;
+
+      } else {
+
+        resumeInfo.innerHTML =
+          '<p class="resume-empty-state">No resume is uploaded yet. Add a PDF or DOCX file to get started.</p>';
+      }
+
+
+    } catch (error) {
+
+      console.error(
+        "Resume loading error:",
+        error
+      );
+
+
+      resumeInfo.innerHTML =
+        '<p class="resume-empty-state is-error">Could not load your resume. Refresh the page and try again.</p>';
+    }
+
+  }
+
+
+  uploadResumeButton.addEventListener(
+    "click",
+    async function () {
+
+      const file =
+        resumeFile.files[0];
+
+
+      if (!file) {
+
+        resumeMessage.innerHTML =
+          '<p class="error">Please select a PDF or DOCX file.</p>';
+
+        return;
+      }
+
+
+      const fileName =
+        file.name.toLowerCase();
+
+
+      if (
+        !fileName.endsWith(".pdf") &&
+        !fileName.endsWith(".docx")
+      ) {
+
+        resumeMessage.innerHTML =
+          '<p class="error">Only PDF and DOCX files are allowed.</p>';
+
+        return;
+      }
+
+
+      if (!jobSeekerId) {
+
+        resumeMessage.innerHTML =
+          '<p class="error">Please login as a Job Seeker first.</p>';
+
+        return;
+      }
+
+
+      const formData =
+        new FormData();
+
+
+      formData.append(
+        "resume",
+        file
+      );
+
+
+      formData.append(
+        "jobSeekerId",
+        jobSeekerId
+      );
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${JAVA_API}/upload-resume`,
+            {
+
+              method: "POST",
+
+              body: formData
+
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (result.success) {
+
+          resumeMessage.innerHTML =
+            `<p class="success">${escapeHtml(result.message)}</p>`;
+
+
+          resumeFile.value = "";
+
+
+          await loadResume();
+
+
+        } else {
+
+          resumeMessage.innerHTML =
+            `<p class="error">${escapeHtml(result.message)}</p>`;
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "Resume upload error:",
+          error
+        );
+
+
+        resumeMessage.innerHTML =
+          '<p class="error">Error uploading resume.</p>';
+      }
+
+    }
+  );
+
+
+  window.deleteResume =
+    async function (resumeId) {
+
+      try {
+
+        const response =
+          await fetch(
+            `${JAVA_API}/delete-resume/${resumeId}`,
+            {
+              method: "DELETE"
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (result.success) {
+
+          resumeMessage.innerHTML =
+            `<p class="success">${escapeHtml(result.message)}</p>`;
+
+
+          await loadResume();
+
+
+        } else {
+
+          resumeMessage.innerHTML =
+            `<p class="error">${escapeHtml(result.message)}</p>`;
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "Resume delete error:",
+          error
+        );
+
+
+        resumeMessage.innerHTML =
+          '<p class="error">Error deleting resume.</p>';
+      }
+
+    };
+
+
+  loadResume();
+
+}
+
+
+// ==================== SKILL GAP ====================
+
+const checkSkillGapButton =
+  document.getElementById(
+    "checkSkillGapButton"
+  );
+
+
+const skillGapResult =
+  document.getElementById(
+    "skillGapResult"
+  );
+
+
+if (checkSkillGapButton) {
+
+  checkSkillGapButton.addEventListener(
+    "click",
+    async function () {
+
+      const skillsInput =
+        document.getElementById(
+          "skills"
+        );
+
+
+      const requiredSkillsInput =
+        document.getElementById(
+          "requiredSkills"
+        );
+
+
+      if (
+        !skillsInput ||
+        !requiredSkillsInput
+      ) {
+
+        return;
+      }
+
+
+      const candidateSkills =
+        skillsInput.value;
+
+
+      const requiredSkills =
+        requiredSkillsInput.value;
+
+
+      if (!candidateSkills.trim()) {
+
+        skillGapResult.innerHTML =
+          '<p class="error">Please enter your skills first.</p>';
+
+        return;
+      }
+
+
+      if (!requiredSkills.trim()) {
+
+        skillGapResult.innerHTML =
+          '<p class="error">Please enter required job skills.</p>';
+
+        return;
+      }
+
+
+      skillGapResult.innerHTML =
+        "<p>Checking skill gap...</p>";
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${ML_API}/skill-gap`,
+            {
+
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+
+                  candidate_skills:
+                    candidateSkills,
+
+                  required_skills:
+                    requiredSkills
+
+                })
+
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (response.ok) {
+          const renderSkills = (skills, kind) => skills.length
+            ? `<ul class="analysis-chips ${kind}">${skills.map((skill) => `<li>${escapeHtml(skill)}</li>`).join("")}</ul>`
+            : '<p class="analysis-empty">None identified</p>';
+          skillGapResult.innerHTML = `
+            <div class="analysis-summary"><strong>${result.coverage}%</strong><span>of listed job skills appear on your profile (${result.matched_count}/${result.required_count})</span></div>
+            <h3>Skills you already list</h3>${renderSkills(result.matched_skills || [], "matched")}
+            <h3>Skills not listed</h3>${renderSkills(result.missing_skills || [], "missing")}
+            <p class="analysis-note">${escapeHtml(result.suggestion)}</p>`;
+        } else {
+          skillGapResult.innerHTML = `<p class="error">${escapeHtml(result.error || "Unable to compare these skills.")}</p>`;
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "Skill gap error:",
+          error
+        );
+
+
+        skillGapResult.innerHTML =
+          '<p class="error">Unable to connect to the ML service.</p>';
+      }
+
+    }
+  );
+
+}
+
+
+// ==================== POST JOB ====================
+
+const jobForm =
+  document.getElementById(
+    "jobForm"
+  );
+
+
+if (jobForm) {
+
+  const employerIdInput =
+    document.getElementById(
+      "employerId"
+    );
+
+
+  const employerId =
+    localStorage.getItem(
+      "employerId"
+    );
+
+
+  if (employerIdInput) {
+
+    employerIdInput.value =
+      employerId || "";
+  }
+
+
+  jobForm.addEventListener(
+    "submit",
+    async function (e) {
+
+      e.preventDefault();
+
+
+      const currentEmployerId =
+        localStorage.getItem(
+          "employerId"
+        );
+
+
+      if (!currentEmployerId) {
+
+        document.getElementById("message").innerHTML =
+          '<p class="error">Please login as an Employer first.</p>';
+
+        return;
+      }
+
+
+      const jobData = {
+
+        employerId:
+          parseInt(currentEmployerId),
+
+        jobTitle:
+          document.getElementById(
+            "jobTitle"
+          ).value,
+
+        jobDescription:
+          document.getElementById(
+            "jobDescription"
+          ).value,
+
+        requiredSkills:
+          document.getElementById(
+            "requiredSkills"
+          ).value,
+
+        preferredSkills:
+          document.getElementById("preferredSkills")?.value || "",
+
+        location:
+          document.getElementById(
+            "location"
+          ).value,
+
+        salary:
+          parseFloat(
+            document.getElementById(
+              "salary"
+            ).value
+          ),
+
+        jobType:
+          document.getElementById(
+            "jobType"
+          ).value,
+
+        experienceRequired:
+          parseInt(
+            document.getElementById(
+              "experienceRequired"
+            ).value
+          )
+
+      };
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${JAVA_API}/post-job`,
+            {
+
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify(jobData)
+
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        const messageDiv =
+          document.getElementById(
+            "message"
+          );
+
+
+        if (result.success) {
+
+          messageDiv.innerHTML =
+            `<p class="success">${escapeHtml(result.message)}</p>`;
+
+
+          jobForm.reset();
+
+
+          if (employerIdInput) {
+
+            employerIdInput.value =
+              currentEmployerId;
+          }
+
+
+        } else {
+
+          messageDiv.innerHTML =
+            `<p class="error">${escapeHtml(result.message)}</p>`;
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "Job posting error:",
+          error
+        );
+
+
+        document.getElementById(
+          "message"
+        ).innerHTML =
+          '<p class="error">Error posting job. Please try again.</p>';
+      }
+
+    }
+  );
+
+}
+
+
+// ==================== JOB SEARCH + MATCHING ====================
+
+const searchForm =
+  document.getElementById(
+    "searchForm"
+  );
+
+
+const jobListings =
+  document.getElementById(
+    "jobListings"
+  );
+
+const savedJobsList = document.getElementById("savedJobsList");
+if (savedJobsList) {
+  let savedJobsCache = [];
+  const savedJobCount = document.getElementById("savedJobCount");
+  const savedJobFilter = document.getElementById("savedJobFilter");
+
+  function renderSavedJobs(jobs) {
+    const query = (savedJobFilter?.value || "").trim().toLowerCase();
+    const visibleJobs = jobs.filter((job) =>
+      [job.jobTitle, job.companyName, job.location, job.requiredSkills, job.jobType]
+        .some((value) => String(value || "").toLowerCase().includes(query))
+    );
+    if (savedJobCount) {
+      savedJobCount.textContent = `${jobs.length} ${jobs.length === 1 ? "saved role" : "saved roles"}`;
+    }
+    if (!visibleJobs.length) {
+      savedJobsList.innerHTML = query
+        ? '<div class="empty-saved-jobs"><h3>No saved roles match that search</h3><p>Try another title, company, or location.</p></div>'
+        : '<div class="empty-saved-jobs"><span class="empty-saved-mark">YOUR SHORTLIST</span><h3>Your shortlist is ready</h3><p>Save a role while browsing and it will appear here for later.</p><a href="search-jobs.html">Browse open roles</a></div>';
+      return;
+    }
+
+    savedJobsList.innerHTML = visibleJobs.map((job) => {
+      const description = String(job.jobDescription || "").trim();
+      const summary = description.length > 220 ? `${description.slice(0, 217).trimEnd()}...` : description;
+      const skills = String(job.requiredSkills || "").split(/[,;|\r\n]+/).map((skill) => skill.trim()).filter(Boolean).slice(0, 6);
+      const salary = Number(job.salary) > 0 ? `₹${Number(job.salary).toLocaleString("en-IN")}` : "Salary not listed";
+      const initials = String(job.companyName || "H").trim().split(/\s+/).slice(0, 2).map((part) => part[0] || "").join("").toUpperCase();
+      return `<article class="saved-job-card" data-saved-job-card="${Number(job.id)}">
+        <div class="saved-job-heading"><div class="saved-company-mark" aria-hidden="true">${escapeHtml(initials || "H")}</div><div class="saved-job-title-block"><p class="saved-job-company">${escapeHtml(job.companyName || "Company")}</p><h3>${escapeHtml(job.jobTitle || "Untitled role")}</h3></div><span class="saved-status">Saved</span></div>
+        <div class="saved-job-meta"><span>${escapeHtml(job.location || "Location not listed")}</span><span>${escapeHtml(job.jobType || "Role type not listed")}</span><span>${escapeHtml(salary)}</span><span>${Number(job.experienceRequired || 0)}+ years</span></div>
+        <p class="saved-job-description">${escapeHtml(summary || "Open this role to review its responsibilities and qualifications.")}</p>
+        ${skills.length ? `<div class="saved-skills-row"><span>Required skills</span><ul class="saved-job-skills">${skills.map((skill) => `<li class="saved-job-skill">${escapeHtml(skill)}</li>`).join("")}</ul></div>` : ""}
+        <div class="saved-job-actions"><button type="button" class="remove-saved-job" data-remove-saved-job="${Number(job.id)}">Remove</button><a href="job-details.html?id=${encodeURIComponent(job.id)}">Review role <span aria-hidden="true">&rarr;</span></a></div>
+      </article>`;
+    }).join("");
+  }
+
+  async function loadSavedJobs() {
+    const jobSeekerId = getSignedInJobSeekerId();
+    if (!jobSeekerId) {
+      if (savedJobCount) savedJobCount.textContent = "Sign in required";
+      savedJobsList.innerHTML = '<div class="empty-saved-jobs"><h3>Sign in to view saved roles</h3><p>Saved opportunities are linked to your job seeker account.</p><a href="login.html">Sign in</a></div>';
+      return;
+    }
+
+    savedJobsList.innerHTML = '<p class="saved-jobs-loading">Loading your saved roles...</p>';
+    try {
+      const response = await fetch(`${JAVA_API}/saved-jobs/${encodeURIComponent(jobSeekerId)}`);
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || "Could not load saved jobs.");
+
+      savedJobsCache = Array.isArray(result.jobs) ? result.jobs : Object.values(result.jobs || {});
+      renderSavedJobs(savedJobsCache);
+    } catch (error) {
+      if (savedJobCount) savedJobCount.textContent = "Unavailable";
+      savedJobsList.innerHTML = `<div class="empty-saved-jobs saved-jobs-error"><h3>Saved roles could not load</h3><p>${escapeHtml(error.message || "Check that the Java API is running, then try again.")}</p><button type="button" id="retrySavedJobs">Try again</button></div>`;
+      document.getElementById("retrySavedJobs")?.addEventListener("click", loadSavedJobs);
+    }
+  }
+
+  savedJobFilter?.addEventListener("input", () => renderSavedJobs(savedJobsCache));
+  savedJobsList.addEventListener("click", async (event) => {
+    const removeButton = event.target.closest("[data-remove-saved-job]");
+    if (!removeButton) return;
+    const jobSeekerId = getSignedInJobSeekerId();
+    const jobId = removeButton.dataset.removeSavedJob;
+    if (!jobSeekerId || !jobId) return;
+
+    removeButton.disabled = true;
+    removeButton.textContent = "Removing...";
+    try {
+      const response = await fetch(`${JAVA_API}/saved-jobs/${encodeURIComponent(jobSeekerId)}/${encodeURIComponent(jobId)}`, { method: "DELETE" });
+      const responseText = await response.text();
+      let result;
+      try {
+        result = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        if (responseText.trimStart().startsWith("<")) {
+          throw new Error("The Java API does not recognize the remove-saved-job route. Restart the Java API from the project root, then try again.");
+        }
+        throw new Error("The Java API returned an unreadable response while removing this role.");
+      }
+      if (!response.ok || !result.success) throw new Error(result.message || "Could not remove this role.");
+      savedJobsCache = savedJobsCache.filter((job) => Number(job.id) !== Number(jobId));
+      renderSavedJobs(savedJobsCache);
+    } catch (error) {
+      removeButton.disabled = false;
+      removeButton.textContent = "Remove";
+      const message = document.getElementById("message");
+      if (message) message.innerHTML = `<p class="error">${escapeHtml(error.message || "Could not remove this role. Please try again.")}</p>`;
+    }
+  });
+
+  loadSavedJobs();
+}
+
+
+if (searchForm && jobListings) {
+
+  async function loadJobs(
+    keyword = ""
+  ) {
+
+    try {
+
+      let url =
+        `${JAVA_API}/jobs`;
+
+
+      if (keyword.trim() !== "") {
+
+        url =
+          `${JAVA_API}/search-jobs?keyword=${encodeURIComponent(keyword)}`;
+      }
+
+
+      const response =
+        await fetch(url);
+
+
+      const result =
+        await response.json();
+
+
+      jobListings.innerHTML = "";
+
+
+      const jobs =
+        Object.values(
+          result.jobs || {}
+        );
+
+      const resultsCount = document.getElementById("jobsCount");
+      if (resultsCount) {
+        resultsCount.textContent = `${jobs.length} ${jobs.length === 1 ? "role" : "roles"}`;
+      }
+
+
+      if (
+        !result.success ||
+        jobs.length === 0
+      ) {
+
+        jobListings.innerHTML =
+          "<p>No jobs found.</p>";
+
+        return;
+      }
+
+
+      const jobSeekerId =
+        localStorage.getItem(
+          "jobSeekerId"
+        );
+
+
+      let resumeText = "";
+
+
+      if (jobSeekerId) {
+
+        try {
+
+          const resumeResponse =
+            await fetch(
+              `${JAVA_API}/resume/${jobSeekerId}`
+            );
+
+
+          const resumeResult =
+            await resumeResponse.json();
+
+
+          if (
+            resumeResult.success &&
+            resumeResult.resumeText
+          ) {
+
+            resumeText =
+              resumeResult.resumeText;
+          }
+
+
+        } catch (error) {
+
+          console.error(
+            "Resume fetch error:",
+            error
+          );
+        }
+
+      }
+
+
+      for (const job of jobs) {
+
+        let matchScore = null;
+
+
+        if (resumeText) {
+
+          const jobText =
+            `${job.jobTitle || ""}
+             ${job.jobDescription || ""}
+             ${job.requiredSkills || ""}`;
+
+
+          try {
+
+            const matchResponse =
+              await fetch(
+                `${ML_API}/match-score`,
+                {
+
+                  method: "POST",
+
+                  headers: {
+                    "Content-Type":
+                      "application/json"
+                  },
+
+                  body:
+                    JSON.stringify({
+
+                      resume_text:
+                        resumeText,
+
+                      job_text:
+                        jobText
+
+                    })
+
+                }
+              );
+
+
+            const matchResult =
+              await matchResponse.json();
+
+
+            if (
+              matchResult.score !==
+              undefined
+            ) {
+
+              matchScore =
+                matchResult.score;
+            }
+
+
+          } catch (error) {
+
+            console.error(
+              "Match score error:",
+              error
+            );
+          }
+
+        }
+
+
+        const jobCard =
+          document.createElement(
+            "div"
+          );
+
+
+        jobCard.className = "job-card job-search-card";
+        const detailUrl = `job-details.html?id=${encodeURIComponent(job.id)}`;
+        const description = String(job.jobDescription || "").trim();
+        const summary = description.length > 190 ? `${description.slice(0, 187).trimEnd()}...` : description;
+        const skillTokens = (value) => String(value || "")
+          .split(/[,;|\r\n]+/)
+          .map((skill) => skill.trim())
+          .filter(Boolean);
+        const requiredSkills = skillTokens(job.requiredSkills).slice(0, 5);
+        const preferredSkills = skillTokens(job.preferredSkills).slice(0, 3);
+        const initials = String(job.companyName || "H")
+          .trim().split(/\s+/).slice(0, 2).map((part) => part[0] || "").join("").toUpperCase();
+        const salary = Number(job.salary) > 0 ? `₹${Number(job.salary).toLocaleString("en-IN")}` : "Salary not listed";
+        const relevance = matchScore === null
+          ? "Upload a resume for an estimate"
+          : `${Number(matchScore).toFixed(0)}% resume relevance`;
+
+        jobCard.innerHTML = `
+          <div class="job-search-card-main">
+            <div class="job-company-mark" aria-hidden="true">${escapeHtml(initials || "H")}</div>
+            <div class="job-search-card-content">
+              <div class="job-search-card-heading">
+                <div>
+                  <p class="job-company-name">${escapeHtml(job.companyName || "Company")}</p>
+                  <h3>${escapeHtml(job.jobTitle || "Job opportunity")}</h3>
+                </div>
+                ${matchScore === null ? "" : `<span class="job-relevance-pill">${escapeHtml(relevance)}</span>`}
+              </div>
+              <div class="job-search-meta">
+                <span>${escapeHtml(job.location || "Location not listed")}</span>
+                <span>${escapeHtml(job.jobType || "Role type not listed")}</span>
+                <span>${escapeHtml(salary)}</span>
+                <span>${Number(job.experienceRequired || 0)}+ years</span>
+              </div>
+              <p class="job-search-summary">${escapeHtml(summary || "Open this listing to review the role responsibilities and qualifications.")}</p>
+              <div class="job-skill-group">
+                <span class="job-skill-label">Required</span>
+                ${requiredSkills.length
+                  ? `<ul class="job-skill-chips">${requiredSkills.map((skill) => `<li>${escapeHtml(skill)}</li>`).join("")}${skillTokens(job.requiredSkills).length > requiredSkills.length ? `<li class="job-skill-more">+${skillTokens(job.requiredSkills).length - requiredSkills.length}</li>` : ""}</ul>`
+                  : '<span class="job-skill-empty">Not specified</span>'}
+              </div>
+              ${preferredSkills.length ? `<div class="job-skill-group preferred-skill-group"><span class="job-skill-label">Preferred</span><ul class="job-skill-chips">${preferredSkills.map((skill) => `<li>${escapeHtml(skill)}</li>`).join("")}${skillTokens(job.preferredSkills).length > preferredSkills.length ? `<li class="job-skill-more">+${skillTokens(job.preferredSkills).length - preferredSkills.length}</li>` : ""}</ul></div>` : ""}
+            </div>
+          </div>
+          <div class="job-search-card-footer">
+            <span class="job-relevance-note">${matchScore === null ? "Add a resume to see a relevance estimate" : "Resume relevance is an estimate"}</span>
+            <a href="${detailUrl}" class="job-link">View role <span aria-hidden="true">&rarr;</span></a>
+          </div>`;
+
+
+        jobListings.appendChild(
+          jobCard
+        );
+
+      }
+
+
+    } catch (error) {
+
+      console.error(
+        "Job loading error:",
+        error
+      );
+
+
+      jobListings.innerHTML =
+        '<p class="error">Error loading jobs. Make sure the Java backend is running.</p>';
+    }
+
+  }
+
+
+  searchForm.addEventListener(
+    "submit",
+    function (e) {
+
+      e.preventDefault();
+
+
+      const keyword =
+        document.getElementById(
+          "keyword"
+        ).value;
+
+
+      loadJobs(keyword);
+
+    }
+  );
+
+
+  loadJobs();
+
+}
+
+
+// ==================== JOB DETAILS + ATS ====================
+
+const jobDetails =
+  document.getElementById(
+    "jobDetails"
+  );
+
+
+const saveJobBtn =
+  document.getElementById(
+    "saveJobBtn"
+  );
+
+
+const applyJobBtn =
+  document.getElementById(
+    "applyJobBtn"
+  );
+
+
+const checkAtsBtn =
+  document.getElementById(
+    "checkAtsBtn"
+  );
+
+
+const atsResult =
+  document.getElementById(
+    "atsResult"
+  );
+
+
+if (jobDetails) {
+
+  const urlParams =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const jobId =
+    urlParams.get("id");
+
+
+  let currentJob = null;
+
+
+  async function loadJobDetails() {
+
+    if (!jobId) {
+
+      jobDetails.innerHTML =
+        "<p>Invalid job ID.</p>";
+
+      return;
+    }
+
+
+    try {
+
+      const response =
+        await fetch(
+          `${JAVA_API}/job-details/${encodeURIComponent(jobId)}`
+        );
+
+
+      const result =
+        await response.json();
+
+
+      if (!result.success) {
+
+        jobDetails.innerHTML =
+          "<p>Job not found.</p>";
+
+        return;
+      }
+
+
+      currentJob = result;
+
+      const signedInSeekerId = getSignedInJobSeekerId();
+      if (signedInSeekerId && saveJobBtn) {
+        fetch(`${JAVA_API}/saved-jobs/${encodeURIComponent(signedInSeekerId)}`)
+          .then((response) => response.ok ? response.json() : null)
+          .then((savedResult) => {
+            const savedJobs = Array.isArray(savedResult?.jobs) ? savedResult.jobs : Object.values(savedResult?.jobs || {});
+            if (savedResult?.success && savedJobs.some((job) => Number(job.id) === Number(currentJob.id))) {
+              saveJobBtn.disabled = true;
+              saveJobBtn.textContent = "Saved";
+            }
+          })
+          .catch(() => { /* Saving remains available if the saved list is temporarily unavailable. */ });
+      }
+      if (signedInSeekerId && applyJobBtn) {
+        fetch(`${JAVA_API}/applications/${encodeURIComponent(signedInSeekerId)}`)
+          .then((response) => response.ok ? response.json() : null)
+          .then((applicationsResult) => {
+            const alreadyApplied = (applicationsResult?.applications || [])
+              .some((application) => Number(application.jobId) === Number(currentJob.id));
+            if (alreadyApplied) {
+              applyJobBtn.disabled = true;
+              applyJobBtn.textContent = "Applied";
+            }
+          })
+          .catch(() => { /* Duplicate applications are also checked on the server. */ });
+      }
+
+      const featureInfo = document.querySelector(".job-feature-info");
+      if (featureInfo) {
+        featureInfo.innerHTML = `
+          <article class="job-feature-item" id="jobSkillGapSection">
+            <div class="job-feature-icon" aria-hidden="true">02</div>
+            <div class="job-feature-copy">
+              <p class="job-feature-label">ROLE FIT</p>
+              <h2>Build your skill plan</h2>
+              <p>See which required and preferred skills are already on your profile, then make a practical checklist for the gaps.</p>
+              <button class="job-feature-button" type="button" id="checkJobSkillGapBtn">Compare my skills</button>
+              <div id="jobSkillGapResult" aria-live="polite"></div>
+            </div>
+          </article>`;
+
+        document.getElementById("checkJobSkillGapBtn").addEventListener("click", compareJobSkills);
+      }
+
+
+      const companyName = String(result.companyName || "Company").trim();
+      const renderSkillTags = (value, emptyText) => {
+        const skills = String(value || "").split(/[,;\n]+/).map((skill) => skill.trim()).filter(Boolean);
+        return skills.length
+          ? `<ul class="job-detail-skill-list">${skills.map((skill) => `<li>${escapeHtml(skill)}</li>`).join("")}</ul>`
+          : `<p class="job-detail-empty">${emptyText}</p>`;
+      };
+      const experience = result.experienceRequired === null || result.experienceRequired === undefined || result.experienceRequired === ""
+        ? "Not specified"
+        : `${escapeHtml(result.experienceRequired)} ${Number(result.experienceRequired) === 1 ? "year" : "years"}`;
+
+      jobDetails.innerHTML = `
+        <div class="job-detail-role">
+          <div class="job-detail-company-mark" aria-hidden="true">${escapeHtml(companyName.charAt(0).toUpperCase())}</div>
+          <div class="job-detail-role-copy">
+            <p class="job-detail-eyebrow">OPEN POSITION</p>
+            <h2>${escapeHtml(result.jobTitle || "Job opportunity")}</h2>
+            <p class="job-detail-company">${escapeHtml(companyName)}</p>
+          </div>
+        </div>
+        <dl class="job-detail-facts">
+          <div><dt>Location</dt><dd>${escapeHtml(result.location || "Not specified")}</dd></div>
+          <div><dt>Compensation</dt><dd>${result.salary ? `&#8377;${escapeHtml(result.salary)}` : "Not specified"}</dd></div>
+          <div><dt>Employment</dt><dd>${escapeHtml(result.jobType || "Not specified")}</dd></div>
+          <div><dt>Experience</dt><dd>${experience}</dd></div>
+        </dl>
+        <section class="job-detail-description" aria-labelledby="jobDescriptionHeading">
+          <h3 id="jobDescriptionHeading">About the role</h3>
+          <p>${escapeHtml(result.jobDescription || "The employer has not added a description yet.")}</p>
+        </section>
+        <div class="job-detail-skills-grid">
+          <section class="job-detail-skill-section" aria-labelledby="requiredSkillsHeading">
+            <div class="job-detail-section-heading"><h3 id="requiredSkillsHeading">Required skills</h3><span>Core qualifications</span></div>
+            ${renderSkillTags(result.requiredSkills, "No required skills listed")}
+          </section>
+          <section class="job-detail-skill-section preferred" aria-labelledby="preferredSkillsHeading">
+            <div class="job-detail-section-heading"><h3 id="preferredSkillsHeading">Preferred skills</h3><span>Helpful extras</span></div>
+            ${renderSkillTags(result.preferredSkills, "No preferred skills listed")}
+          </section>
+        </div>
+      `;
+    } catch (error) {
+
+      console.error(
+        "Job details error:",
+        error
+      );
+
+
+      jobDetails.innerHTML =
+        '<p class="error">Error loading job details.</p>';
+    }
+
+  }
+
+  async function compareJobSkills() {
+    const resultBox = document.getElementById("jobSkillGapResult");
+    const button = document.getElementById("checkJobSkillGapBtn");
+    const jobSeekerId = getSignedInJobSeekerId();
+    if (!jobSeekerId) {
+      resultBox.innerHTML = '<p class="error">Sign in as a job seeker to compare your profile.</p>';
+      return;
+    }
+    if (!currentJob || (!currentJob.requiredSkills && !currentJob.preferredSkills)) {
+      resultBox.innerHTML = '<p class="error">This job does not list required or preferred skills yet.</p>';
+      return;
+    }
+
+    button.disabled = true;
+    resultBox.innerHTML = '<p>Comparing your profile with this job…</p>';
+    try {
+      const profileResponse = await fetch(`${JAVA_API}/profile-job-seeker/${encodeURIComponent(jobSeekerId)}`);
+      const profile = profileResponse.ok ? await profileResponse.json() : {};
+      const candidateSkills = profile.success && profile.skills ? profile.skills : "";
+
+      const response = await fetch(`${ML_API}/skill-gap`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          candidate_skills: candidateSkills,
+          required_skills: currentJob.requiredSkills || "",
+          preferred_skills: currentJob.preferredSkills || ""
+        })
+      });
+      const analysis = await response.json();
+      if (!response.ok) throw new Error(analysis.error || "Could not compare skills");
+
+      const chips = (items, kind) => items.length
+        ? `<ul class="analysis-chips ${kind}">${items.map((skill) => `<li>${escapeHtml(skill)}</li>`).join("")}</ul>`
+        : '<p class="analysis-empty">None identified</p>';
+      const storageKey = `hirebase.learning-plan.${currentJob.id}`;
+      let completed = {};
+      try {
+        const savedProgress = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        if (savedProgress && typeof savedProgress === "object" && !Array.isArray(savedProgress)) completed = savedProgress;
+      } catch (storageError) { completed = {}; }
+      const planItems = analysis.learning_plan || [];
+      const requiredCoverageLabel = analysis.coverage === null
+        ? "No required skills listed"
+        : `${analysis.coverage}%`;
+      const checklist = planItems.length
+        ? `<div class="learning-checklist">${planItems.map((item) => {
+            const itemKey = `${item.category}:${item.skill}`;
+            const isChecked = Boolean(completed[itemKey]);
+            return `<label class="learning-checklist-item ${isChecked ? "is-complete" : ""}">
+              <input type="checkbox" data-learning-key="${escapeHtml(itemKey)}" ${isChecked ? "checked" : ""}>
+              <span class="learning-check-copy"><span class="learning-item-meta"><strong>${escapeHtml(item.category)} skill</strong><small>${escapeHtml(item.priority)} priority</small></span>
+                <b>${escapeHtml(item.skill)}</b><span>${escapeHtml(item.suggested_step)}</span></span>
+            </label>`;
+          }).join("")}</div>`
+        : '<p class="analysis-empty">No skill gaps found from the skills on your profile.</p>';
+      resultBox.innerHTML = `
+        <div class="analysis-summary"><strong>${requiredCoverageLabel}</strong><span>required skills on your profile (${analysis.matched_count}/${analysis.required_count})</span></div>
+        <div class="skill-gap-categories">
+          <section class="skill-gap-category required-category"><div class="skill-gap-category-heading"><h4>Required skills</h4><span>Core qualifications</span></div>
+            <p class="skill-gap-count">${analysis.matched_count} of ${analysis.required_count} listed</p>
+            <h5>Already on your profile</h5>${chips(analysis.matched_skills || [], "matched")}
+            <h5>To develop</h5>${chips(analysis.missing_skills || [], "missing")}
+          </section>
+          <section class="skill-gap-category preferred-category"><div class="skill-gap-category-heading"><h4>Preferred skills</h4><span>Helpful extras</span></div>
+            <p class="skill-gap-count">${analysis.matched_preferred_count} of ${analysis.preferred_count} listed</p>
+            <h5>Already on your profile</h5>${chips(analysis.matched_preferred_skills || [], "matched")}
+            <h5>Optional to develop</h5>${chips(analysis.missing_preferred_skills || [], "missing")}
+          </section>
+        </div>
+        <section class="learning-plan-section"><div class="ats-section-heading"><div><span class="ats-overline">YOUR LEARNING PLAN</span><h4>Build skills at your pace</h4></div><span class="ats-recommendation-count">${planItems.length} items</span></div>
+          <p class="analysis-note">Required gaps come first. Preferred skills are optional. Check an item when you have practiced it; progress is saved in this browser for this job.</p>
+          ${checklist}
+        </section>
+        <p class="analysis-note">${escapeHtml(analysis.suggestion)}</p>`;
+
+      resultBox.querySelectorAll("input[data-learning-key]").forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+          completed[checkbox.dataset.learningKey] = checkbox.checked;
+          try { localStorage.setItem(storageKey, JSON.stringify(completed)); } catch (storageError) { /* Keep the current checklist usable if storage is unavailable. */ }
+          checkbox.closest(".learning-checklist-item")?.classList.toggle("is-complete", checkbox.checked);
+        });
+      });
+    } catch (error) {
+      resultBox.innerHTML = '<p class="error">Could not compare skills. Check that the Java and Python services are running.</p>';
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+
+  // ==================== SAVE JOB ====================
+
+  if (saveJobBtn) {
+
+    saveJobBtn.addEventListener(
+      "click",
+      async function () {
+
+        const jobSeekerId = getSignedInJobSeekerId();
+
+
+        if (!jobSeekerId) {
+
+          document.getElementById(
+            "message"
+          ).innerHTML =
+            '<p class="error">Please login as a Job Seeker first.</p>';
+
+          return;
+        }
+
+        saveJobBtn.disabled = true;
+        saveJobBtn.textContent = "Saving...";
+
+        try {
+
+          const response =
+            await fetch(
+              `${JAVA_API}/save-job`,
+              {
+
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify({
+
+                    jobSeekerId:
+                      parseInt(jobSeekerId),
+
+                    jobId:
+                      parseInt(jobId)
+
+                  })
+
+              }
+            );
+
+
+          const result =
+            await response.json();
+
+
+          const alreadySaved = /already saved/i.test(result.message || "");
+          const saved = result.success || alreadySaved;
+          document.getElementById("message").innerHTML = saved
+            ? `<p class="success">${escapeHtml(alreadySaved ? "This role is already in your saved jobs." : result.message)}</p>`
+            : `<p class="error">${escapeHtml(result.message || "Unable to save this role.")}</p>`;
+          if (saved) {
+            saveJobBtn.disabled = true;
+            saveJobBtn.textContent = "Saved";
+          } else {
+            saveJobBtn.disabled = false;
+            saveJobBtn.textContent = "Save Job";
+          }
+
+
+        } catch (error) {
+
+          console.error(
+            "Save job error:",
+            error
+          );
+
+
+          document.getElementById(
+            "message"
+          ).innerHTML =
+            '<p class="error">Error saving job.</p>';
+          saveJobBtn.disabled = false;
+          saveJobBtn.textContent = "Save Job";
+        }
+
+      }
+    );
+
+  }
+
+
+  // ==================== APPLY FOR JOB ====================
+
+  if (applyJobBtn) {
+
+    applyJobBtn.addEventListener(
+      "click",
+      async function () {
+
+        const jobSeekerId = getSignedInJobSeekerId();
+
+
+        if (!jobSeekerId) {
+
+          document.getElementById(
+            "message"
+          ).innerHTML =
+            '<p class="error">Please login as a Job Seeker first.</p>';
+
+          return;
+        }
+
+
+        if (!jobId) {
+
+          document.getElementById(
+            "message"
+          ).innerHTML =
+            '<p class="error">Invalid job ID.</p>';
+
+          return;
+        }
+
+
+        try {
+
+          applyJobBtn.disabled =
+            true;
+
+
+          applyJobBtn.textContent =
+            "Applying...";
+
+
+          const response =
+            await fetch(
+              `${JAVA_API}/apply-job`,
+              {
+
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify({
+
+                    jobSeekerId:
+                      parseInt(jobSeekerId),
+
+                    jobId:
+                      parseInt(jobId)
+
+                  })
+
+              }
+            );
+
+
+          const result =
+            await response.json();
+
+
+          if (result.success) {
+
+            document.getElementById(
+              "message"
+            ).innerHTML =
+              `<p class="success">${escapeHtml(result.message)}</p>`;
+
+
+            applyJobBtn.textContent =
+              "✓ Applied";
+
+            applyJobBtn.disabled = true;
+
+
+          } else {
+
+            document.getElementById(
+              "message"
+            ).innerHTML =
+              `<p class="error">${escapeHtml(result.message)}</p>`;
+
+
+            applyJobBtn.disabled = response.status === 409;
+
+
+              applyJobBtn.textContent = "Applied";
+          }
+
+
+        } catch (error) {
+
+          console.error(
+            "Apply job error:",
+            error
+          );
+
+
+          document.getElementById(
+            "message"
+          ).innerHTML =
+            '<p class="error">Unable to submit application. Please try again.</p>';
+
+
+          applyJobBtn.disabled =
+            false;
+
+
+          applyJobBtn.textContent =
+            "📩 Apply Now";
+        }
+
+      }
+    );
+
+  }
+
+
+  // ==================== ATS SCORE ====================
+
+  if (checkAtsBtn) {
+
+    checkAtsBtn.addEventListener(
+      "click",
+      async function () {
+        const originalLabel = checkAtsBtn.textContent;
+
+        try {
+
+          const jobSeekerId = getSignedInJobSeekerId();
+
+
+          if (!jobSeekerId) {
+
+            atsResult.innerHTML =
+              '<p class="error">Sign in with a Job Seeker account to analyze your resume. <a href="login.html">Sign in</a></p>';
+
+            return;
+          }
+
+
+          if (!currentJob) {
+
+            atsResult.innerHTML =
+              '<p class="error">Job details are still loading.</p>';
+
+            return;
+          }
+
+
+          atsResult.innerHTML =
+            "<p>Preparing your resume analysis...</p>";
+          checkAtsBtn.disabled = true;
+          checkAtsBtn.textContent = "Analyzing resume...";
+
+
+          const resumeResponse =
+            await fetch(
+              `${JAVA_API}/resume/${jobSeekerId}`
+            );
+
+
+          const resumeResult =
+            await resumeResponse.json();
+
+
+          if (
+            !resumeResult.success ||
+            !resumeResult.resumeText
+          ) {
+
+            atsResult.innerHTML =
+              '<p class="error">Upload a PDF or DOCX resume from <a href="profile.html?v=20261026-saved-resume-v2">your profile</a>, then return here to analyze it.</p>';
+
+            return;
+          }
+
+
+          const jobText =
+            `${currentJob.jobTitle || ""}
+             ${currentJob.jobDescription || ""}
+             ${currentJob.requiredSkills || ""}`;
+
+
+          const atsResponse =
+            await fetch(
+              `${ML_API}/ats-score`,
+              {
+
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+              body:
+                  JSON.stringify({
+                    resume_text: resumeResult.resumeText,
+                    job_text: jobText,
+                    required_skills: currentJob.requiredSkills || "",
+                    preferred_skills: currentJob.preferredSkills || ""
+                  })
+
+              }
+            );
+
+
+          const atsData =
+            await atsResponse.json();
+
+
+          if (!atsResponse.ok || atsData.score === undefined) {
+            throw new Error(atsData.error || "Unable to calculate resume alignment.");
+          }
+
+          const score = Math.max(0, Math.min(100, Number(atsData.score) || 0));
+          const dimensions = atsData.dimensions || {};
+          const weights = atsData.weights || {};
+          const metrics = [
+            ["Required skills", dimensions.skill_coverage, `${weights.skill_coverage || 0}% of score`],
+            ["Job keywords", dimensions.keyword_coverage, `${weights.keyword_coverage || 0}% of score`],
+            ["Text similarity", dimensions.text_similarity, `${weights.text_similarity || 0}% of score`],
+            ["Semantic match", dimensions.semantic_similarity, `${weights.semantic_similarity || 0}% of score`],
+            ["Resume structure", dimensions.resume_structure, `${weights.resume_structure || 0}% of score`]
+          ].filter(([, value, weight]) => value !== null && value !== undefined && !weight.startsWith("0%"));
+          const metricCards = metrics.map(([label, value, weight]) => `
+            <article class="ats-metric-card">
+              <span>${escapeHtml(label)}</span>
+              <strong>${Number(value).toFixed(0)}%</strong>
+              <small>${escapeHtml(weight)}</small>
+              <div class="ats-metric-track"><i style="width:${Math.max(0, Math.min(100, Number(value)))}%"></i></div>
+            </article>`).join("");
+          const chips = (items, kind, empty) => items && items.length
+            ? `<ul class="analysis-chips ${kind}">${items.map((term) => `<li>${escapeHtml(term)}</li>`).join("")}</ul>`
+            : `<p class="analysis-empty">${empty}</p>`;
+          const suggestions = (atsData.suggestions || []).map((item) => {
+            const suggestion = typeof item === "string"
+              ? { priority: "medium", title: "Recommendation", detail: item }
+              : item;
+            return `<article class="ats-suggestion-item priority-${escapeHtml(suggestion.priority || "medium")}">
+              <span>${escapeHtml((suggestion.priority || "medium").toUpperCase())}</span>
+              <div><h4>${escapeHtml(suggestion.title || "Recommendation")}</h4><p>${escapeHtml(suggestion.detail || "")}</p></div>
+            </article>`;
+          }).join("");
+          const signals = atsData.signals || {};
+          const requirementEvidence = atsData.requirements_evidence || [];
+          const preferredSkillFallback = (atsData.preferred_skills || []).length
+            ? "None of the listed preferred skills were detected."
+            : "No preferred skills were provided for this job.";
+          const renderEvidence = (item, category) => `
+            <article class="ats-evidence-item">
+              <div class="ats-evidence-heading"><strong>${escapeHtml(item.requirement || "Requirement")}</strong><span class="ats-evidence-status ${item.status === "matched" ? "is-matched" : "is-missing"}">${category} · ${item.status === "matched" ? "Exact skill found" : "Not explicitly found"}</span></div>
+              ${(item.resume_evidence || []).length
+                ? `<ul>${item.resume_evidence.map((excerpt) => `<li><q>${escapeHtml(excerpt)}</q></li>`).join("")}</ul>`
+                : `<p>${escapeHtml(item.explanation || "No exact skill phrase was found in the extracted resume text.")}</p>`}
+            </article>`;
+          const evidenceCards = [
+            ...requirementEvidence.map((item) => renderEvidence(item, "Required")),
+            ...(atsData.preferred_evidence || []).map((item) => renderEvidence(item, "Preferred"))
+          ].join("");
+          const semanticAnalysis = atsData.semantic_analysis || {};
+          const semanticEvidence = (semanticAnalysis.matches || []).slice(0, 8).map((item) => `
+            <article class="ats-semantic-item">
+              <div class="ats-evidence-heading"><strong>Job wording</strong><span class="ats-evidence-status ${item.status === "matched" ? "is-matched" : item.status === "related" ? "is-related" : "is-missing"}">${escapeHtml(item.status || "review")}${item.similarity === undefined ? "" : ` · ${Number(item.similarity).toFixed(0)}%`}</span></div>
+              <p><q>${escapeHtml(item.job_requirement || "")}</q></p>
+              ${item.resume_evidence ? `<p><strong>Closest resume phrase:</strong> <q>${escapeHtml(item.resume_evidence)}</q></p>` : `<p>${escapeHtml(item.explanation || "No close wording was found.")}</p>`}
+            </article>`).join("");
+
+          atsResult.innerHTML = `
+            <div class="ats-result-card">
+              <div class="ats-score-hero">
+                <div class="ats-score-ring" style="--score:${score}%"><div><strong>${score.toFixed(0)}<small>%</small></strong><span>alignment</span></div></div>
+                <div class="ats-score-copy"><span class="ats-overline">YOUR ROLE ALIGNMENT</span><h3>${escapeHtml(atsData.score_label || "Resume analysis complete")}</h3><p>Compared your resume with this job's requirements and description.</p><span class="ats-method-pill">${semanticAnalysis.available ? "Python NLP · sentence embeddings · TF-IDF" : "Python NLP · TF-IDF"}</span></div>
+              </div>
+              <section class="ats-metrics-grid" aria-label="Analysis breakdown">${metricCards}</section>
+              <div class="ats-analysis-columns">
+                <section><h3>Required skills found</h3>${chips(atsData.matched_skills, "matched", "No listed skills were detected in the resume text.")}</section>
+                <section><h3>Required skills to review</h3>${chips(atsData.missing_skills, "missing", "All listed required skills were detected.")}</section>
+                <section><h3>Preferred skills found</h3>${chips(atsData.matched_preferred_skills, "matched", preferredSkillFallback)}</section>
+                <section><h3>Optional preferred skills to review</h3>${chips(atsData.missing_preferred_skills, "missing", "No optional preferred skills remain to review.")}</section>
+              </div>
+              <section class="ats-evidence-section">
+                <div class="ats-section-heading"><div><span class="ats-overline">TRACEABLE RESULTS</span><h3>Why each skill was matched</h3></div></div>
+                ${evidenceCards || '<p class="analysis-empty">This job did not provide a separate required-skills list.</p>'}
+              </section>
+              <details class="ats-semantic-details">
+                <summary>View sentence-level evidence and related wording</summary>
+                <p class="analysis-note">${escapeHtml(semanticAnalysis.note || "Semantic comparison was not available.")}</p>
+                ${semanticEvidence || '<p class="analysis-empty">No sentence-level comparisons are available for this resume and job.</p>'}
+              </details>
+              <details class="ats-keyword-details"><summary>View keyword comparison</summary>
+                <h4>Detected in your resume</h4>${chips(atsData.matched_keywords, "matched", "No job terms detected yet.")}
+                <h4>Not detected</h4>${chips(atsData.missing_keywords, "missing", "No missing terms detected.")}
+              </details>
+              <section class="ats-signals"><h3>Resume quality signals</h3><div class="ats-signal-grid">
+                <div><strong>${Number(signals.resume_word_count || 0).toLocaleString()}</strong><span>words analyzed</span></div>
+                <div><strong>${Number(signals.sections_found || 0)} / ${Number(signals.sections_total || 0)}</strong><span>sections found</span></div>
+                <div><strong>${Number(signals.quantified_lines || 0)}</strong><span>measurable results</span></div>
+                <div><strong>${Number(signals.action_verb_uses || 0)}</strong><span>action verb uses</span></div>
+              </div></section>
+              <section class="ats-recommendations"><div class="ats-section-heading"><div><span class="ats-overline">NEXT STEPS</span><h3>Ways to strengthen your resume</h3></div><span class="ats-recommendation-count">${(atsData.suggestions || []).length} tips</span></div>${suggestions || '<p class="analysis-empty">No recommendations available.</p>'}</section>
+              <p class="analysis-note">${escapeHtml(atsData.score_note || "An estimate only. Review your resume and the role yourself.")}</p>
+            </div>`;
+
+
+        } catch (error) {
+
+          console.error(
+            "ATS score error:",
+            error
+          );
+
+
+          atsResult.innerHTML = `<p class="error">${escapeHtml(error.message || "Unable to connect to the Python analysis service. Check that it is running on port 5000.")}</p>`;
+        } finally {
+          checkAtsBtn.disabled = false;
+          checkAtsBtn.textContent = originalLabel;
+        }
+
+      }
+    );
+
+  }
+
+
+  loadJobDetails();
+
+}
+
+
+// ==================== LOGOUT ====================
+
+const logoutLinks =
+  document.querySelectorAll(
+    'a[href="login.html"]'
+  );
+
+
+logoutLinks.forEach((link) => {
+
+  if (
+    link.textContent
+      .toLowerCase()
+      .includes("logout")
+  ) {
+
+    link.addEventListener(
+      "click",
+      function () {
+
+        localStorage.removeItem(
+          "userId"
+        );
+
+        localStorage.removeItem(
+          "userName"
+        );
+
+        localStorage.removeItem("userEmail");
+
+        localStorage.removeItem(
+          "userType"
+        );
+
+        localStorage.removeItem(
+          "jobSeekerId"
+        );
+
+        localStorage.removeItem(
+          "employerId"
+        );
+
+      }
+    );
+
+  }
+
+});
+
+// ==================== EMPLOYER COMPANY PROFILE ====================
+
+
+const employerProfileForm =
+  document.getElementById(
+    "employerProfileForm"
+  );
+
+
+if (employerProfileForm) {
+
+  const employerId =
+    localStorage.getItem(
+      "employerId"
+    );
+
+
+  const companyName =
+    document.getElementById(
+      "companyName"
+    );
+
+
+  const companyDescription =
+    document.getElementById(
+      "companyDescription"
+    );
+
+
+  const companySize =
+    document.getElementById(
+      "companySize"
+    );
+
+
+  const industry =
+    document.getElementById(
+      "industry"
+    );
+
+  const foundedYear = document.getElementById("foundedYear");
+  const companyWebsite = document.getElementById("companyWebsite");
+
+
+  const messageDiv =
+    document.getElementById(
+      "message"
+    );
+
+
+  // ================= LOAD COMPANY PROFILE =================
+
+  async function loadEmployerProfile() {
+
+    if (!employerId) {
+
+      messageDiv.innerHTML =
+        '<p class="error">Please login as an Employer first.</p>';
+
+      return;
+    }
+
+
+    try {
+
+      const response =
+        await fetch(
+          `${JAVA_API}/profile-employer/${employerId}`
+        );
+
+
+      const result =
+        await response.json();
+
+
+      if (
+        result.success &&
+        result.profile
+      ) {
+
+        // Registered company name
+        companyName.value =
+          result.profile.companyName || "";
+
+
+        // Company profile information
+        companyDescription.value =
+          result.profile.companyDescription ||
+          "";
+
+
+        companySize.value =
+          result.profile.companySize ||
+          "";
+
+
+        industry.value =
+          result.profile.industry ||
+          "";
+
+        foundedYear.value = result.profile.foundedYear || "";
+        companyWebsite.value = result.profile.website || "";
+
+      }
+
+
+    } catch (error) {
+
+      console.error(
+        "Employer profile load error:",
+        error
+      );
+
+
+      messageDiv.innerHTML =
+        '<p class="error">Unable to load company profile.</p>';
+    }
+
+  }
+
+
+  // ================= SAVE COMPANY PROFILE =================
+
+  employerProfileForm.addEventListener(
+    "submit",
+    async function (e) {
+
+      e.preventDefault();
+
+
+      if (!employerId) {
+
+        messageDiv.innerHTML =
+          '<p class="error">Please login as an Employer first.</p>';
+
+        return;
+      }
+
+
+      const profileData = {
+
+        employerId:
+          parseInt(employerId),
+
+        companyName: companyName.value.trim(),
+
+        companyDescription:
+          companyDescription.value,
+
+        companySize:
+          companySize.value,
+
+        industry:
+          industry.value,
+
+        foundedYear: foundedYear.value || null,
+
+        website: companyWebsite.value.trim()
+
+      };
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${JAVA_API}/profile-employer`,
+            {
+
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify(
+                  profileData
+                )
+
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (result.success) {
+
+          messageDiv.innerHTML =
+            `<p class="success">${escapeHtml(result.message)}</p>`;
+
+
+        } else {
+
+          messageDiv.innerHTML =
+            `<p class="error">${escapeHtml(result.message)}</p>`;
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "Employer profile save error:",
+          error
+        );
+
+
+        messageDiv.innerHTML =
+          '<p class="error">Error saving company profile. Please try again.</p>';
+      }
+
+    }
+  );
+
+
+  // Load existing company profile
+  loadEmployerProfile();
+
+}
+
+// ==================== APPLICATION REVIEW ====================
+
+const employerJobsContainer = document.getElementById("employerJobs");
+
+if (employerJobsContainer) {
+  const jobsList = document.getElementById("jobsList");
+  const employerId = localStorage.getItem("employerId");
+
+  async function loadEmployerApplications() {
+    if (!employerId) {
+      jobsList.innerHTML = '<p class="error">Sign in as an employer to review applications.</p>';
+      return;
+    }
+
+    try {
+      const jobsResponse = await fetch(`${JAVA_API}/employer-jobs/${encodeURIComponent(employerId)}`);
+      const jobsResult = await jobsResponse.json();
+      if (!jobsResponse.ok || !jobsResult.success) throw new Error("Could not load jobs");
+
+      const jobs = Object.values(jobsResult.jobs || {});
+      const postedCount = document.getElementById("dashboardPostedJobCount");
+      const applicationCount = document.getElementById("dashboardEmployerApplicationCount");
+      const pendingCount = document.getElementById("dashboardPendingCount");
+      if (postedCount) postedCount.textContent = String(jobs.length);
+      if (!jobs.length) {
+        if (applicationCount) applicationCount.textContent = "0";
+        if (pendingCount) pendingCount.textContent = "0";
+        jobsList.innerHTML = '<div class="empty-state"><h3>No jobs posted yet</h3><p>Your applications will appear here after you post a job.</p><a href="post-job.html">Post your first job</a></div>';
+        return;
+      }
+
+      jobsList.innerHTML = jobs.map((job) => `
+        <article class="job-card employer-job-card">
+          <div class="employer-job-heading">
+            <div><h3>${escapeHtml(job.jobTitle || "Job")}</h3><p>${escapeHtml(job.location || "Location not specified")} · ${escapeHtml(job.jobType || "Role")}</p></div>
+            <span class="applicant-count" data-count-for="${Number(job.id)}">Loading applicants</span>
+          </div>
+          <section class="applicant-list" aria-label="Applicants for ${escapeHtml(job.jobTitle || "job")}" data-applicants-for="${Number(job.id)}"><p>Checking for applications…</p></section>
+        </article>
+      `).join("");
+
+      let totalApplications = 0;
+      let applicationsToReview = 0;
+      await Promise.all(jobs.map(async (job) => {
+        const list = jobsList.querySelector(`[data-applicants-for="${Number(job.id)}"]`);
+        const count = jobsList.querySelector(`[data-count-for="${Number(job.id)}"]`);
+        try {
+          const response = await fetch(`${JAVA_API}/job-applicants/${encodeURIComponent(job.id)}?employerId=${encodeURIComponent(employerId)}`);
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error("Could not load applicants");
+          const applicants = result.applicants || [];
+          totalApplications += applicants.length;
+          applicationsToReview += applicants.filter((applicant) =>
+            !["Shortlisted", "Rejected"].includes(applicant.status)
+          ).length;
+          count.textContent = `${applicants.length} ${applicants.length === 1 ? "application" : "applications"}`;
+          list.innerHTML = applicants.length ? applicants.map((applicant) => {
+            const accepted = applicant.status === "Shortlisted";
+            const rejected = applicant.status === "Rejected";
+            const state = accepted ? "Accepted" : rejected ? "Rejected" : "Under review";
+            const resumeLink = applicant.resumeId
+              ? `<a class="resume-link" href="${JAVA_API}/application-resume/${encodeURIComponent(applicant.resumeId)}?employerId=${encodeURIComponent(employerId)}" target="_blank" rel="noopener">View resume · ${escapeHtml(applicant.resumeFileName || "Open file")}</a>`
+              : '<span class="resume-unavailable">Resume unavailable</span>';
+            const decisionControls = accepted || rejected
+              ? `<p class="decision-recorded">${accepted ? "You accepted this application." : "You declined this application."}</p>`
+              : `<div class="application-actions">
+                  <button type="button" data-application-decision="Shortlisted" data-application-id="${Number(applicant.applicationId)}">Accept</button>
+                  <button type="button" class="secondary-decision" data-application-decision="Rejected" data-application-id="${Number(applicant.applicationId)}">Reject</button>
+                </div>`;
+            return `<article class="applicant-card">
+              <div class="applicant-details"><div><h4>${escapeHtml(applicant.name || "Candidate")}</h4><a href="mailto:${encodeURIComponent(applicant.email || "")}">${escapeHtml(applicant.email || "")}</a></div><span class="application-status status-${state.toLowerCase()}">${state}</span></div>
+              <p class="application-date">Applied ${escapeHtml(applicant.applicationDate || "recently")}</p>
+              ${resumeLink}
+              ${decisionControls}
+            </article>`;
+          }).join("") : '<p class="empty-applicants">No applications yet. We’ll list new candidates here.</p>';
+        } catch (error) {
+          count.textContent = "Applications unavailable";
+          list.innerHTML = '<p class="error">Could not load applications. Try refreshing the page.</p>';
+        }
+      }));
+      if (applicationCount) applicationCount.textContent = String(totalApplications);
+      if (pendingCount) pendingCount.textContent = String(applicationsToReview);
+    } catch (error) {
+      jobsList.innerHTML = '<p class="error">Could not load your jobs. Check that the Java API is running.</p>';
+    }
+  }
+
+  jobsList.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-application-decision]");
+    if (!button) return;
+    button.disabled = true;
+    try {
+      const response = await fetch(`${JAVA_API}/application-status/${encodeURIComponent(button.dataset.applicationId)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: button.dataset.applicationDecision, employerId: Number(employerId) })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || "Update failed");
+      await loadEmployerApplications();
+    } catch (error) {
+      button.disabled = false;
+      window.alert("We couldn’t update this application. Please try again.");
+    }
+  });
+
+  loadEmployerApplications();
+  window.setInterval(loadEmployerApplications, 30000);
+}
+
+// Show employer decisions on the job seeker dashboard, and refresh while it is open.
+const applicationUpdates = document.getElementById("applicationUpdates");
+if (applicationUpdates) {
+  const jobSeekerId = localStorage.getItem("jobSeekerId");
+  async function loadApplicationUpdates() {
+    if (!jobSeekerId) {
+      applicationUpdates.innerHTML = '<p>Sign in as a job seeker to see your application updates.</p>';
+      return;
+    }
+    try {
+      const response = await fetch(`${JAVA_API}/applications/${encodeURIComponent(jobSeekerId)}`);
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error("Could not load updates");
+      const applications = result.applications || [];
+      const applicationsCount = document.getElementById("dashboardApplicationsCount");
+      if (applicationsCount) applicationsCount.textContent = String(applications.length);
+      applicationUpdates.innerHTML = applications.length ? applications.map((application) => {
+        const decided = application.status === "Shortlisted" || application.status === "Rejected";
+        const state = application.status === "Shortlisted" ? "Accepted" : application.status === "Rejected" ? "Not selected" : "Under review";
+        const updateText = application.status === "Shortlisted"
+          ? `Good news — ${escapeHtml(application.companyName)} would like to move forward with your application.`
+          : application.status === "Rejected"
+            ? `${escapeHtml(application.companyName)} has finished reviewing this application.`
+            : "Your application has been sent. We’ll show an update here when it’s reviewed.";
+        return `<article class="candidate-application ${decided ? "has-decision" : ""}">
+          <div><p class="application-company">${escapeHtml(application.companyName || "Employer")}</p><h3>${escapeHtml(application.jobTitle || "Job")}</h3><p>${escapeHtml(updateText)}</p></div>
+          <span class="application-status status-${state.toLowerCase().replaceAll(" ", "-")}">${state}</span>
+        </article>`;
+      }).join("") : '<p>You haven’t applied to any jobs yet. When you do, you can follow each application here.</p>';
+    } catch (error) {
+      applicationUpdates.innerHTML = '<p class="error">Your application updates couldn’t load. Please refresh the page.</p>';
+    }
+  }
+  loadApplicationUpdates();
+  window.setInterval(loadApplicationUpdates, 30000);
+}
+
+const dashboardSavedCount = document.getElementById("dashboardSavedCount");
+const dashboardResumeStatus = document.getElementById("dashboardResumeStatus");
+const dashboardSeekerId = localStorage.getItem("jobSeekerId");
+if ((dashboardSavedCount || dashboardResumeStatus) && dashboardSeekerId) {
+  Promise.all([
+    fetch(`${JAVA_API}/saved-jobs/${encodeURIComponent(dashboardSeekerId)}`).then((response) => response.ok ? response.json() : null),
+    fetch(`${JAVA_API}/resume/${encodeURIComponent(dashboardSeekerId)}`).then((response) => response.ok ? response.json() : null)
+  ]).then(([savedResult, resumeResult]) => {
+    if (dashboardSavedCount && savedResult?.success) {
+      dashboardSavedCount.textContent = String(savedResult.count ?? Object.keys(savedResult.jobs || {}).length);
+    }
+    if (dashboardResumeStatus) {
+      dashboardResumeStatus.textContent = resumeResult?.success ? "Ready" : "Not uploaded";
+      dashboardResumeStatus.classList.toggle("is-missing", !resumeResult?.success);
+    }
+  }).catch(() => {
+    if (dashboardResumeStatus) dashboardResumeStatus.textContent = "Unavailable";
+  });
+}

@@ -1,0 +1,401 @@
+/* =========================================================
+   HIREBASE - EMPLOYER DASHBOARD
+   ========================================================= */
+
+.employer-page {
+    width: 100%;
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 45px 30px 70px;
+}
+
+
+/* ================= WELCOME ================= */
+
+.employer-welcome {
+    background: linear-gradient(135deg, #eff6ff, #ffffff);
+    border: 1px solid #dbeafe;
+    border-radius: 18px;
+
+    padding: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 30px;
+    margin-bottom: 28px;
+}
+
+.employer-label {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 9px;
+}
+
+.employer-welcome h1 {
+    font-size: 35px;
+    margin-bottom: 9px;
+}
+
+.employer-welcome p:not(.employer-label) {
+    color: #64748b;
+    font-size: 15px;
+}
+
+.employer-primary-button {
+    width: auto;
+    min-width: 160px;
+    white-space: nowrap;
+}
+
+
+/* ================= STATS ================= */
+
+.employer-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+
+    margin-bottom: 45px;
+}
+
+.employer-stat-card {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    padding: 22px;
+
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+}
+
+.employer-stat-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #eff6ff;
+    border-radius: 12px;
+
+    font-size: 21px;
+}
+
+.employer-stat-title {
+    display: block;
+
+    color: #111827;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.employer-stat-description {
+    display: block;
+
+    color: #6b7280;
+    font-size: 13px;
+
+    margin-top: 3px;
+}
+
+
+/* ================= SECTION ================= */
+
+.employer-section {
+    margin-bottom: 40px;
+}
+
+.employer-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 25px;
+    margin-bottom: 22px;
+}
+
+.employer-section-heading h2 {
+    font-size: 25px;
+    margin-bottom: 5px;
+}
+
+.employer-section-heading p:not(.section-label) {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.section-label {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.secondary-action {
+    display: inline-block;
+
+    padding: 10px 15px;
+
+    background: #ffffff;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+.secondary-action:hover {
+    background: #eff6ff;
+    text-decoration: none;
+}
+
+
+/* ================= EMPLOYER JOBS ================= */
+
+#employerJobs {
+    width: 100%;
+}
+
+#jobsList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#jobsList .job-card {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    padding: 24px;
+
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+
+    transition: 0.2s;
+}
+
+#jobsList .job-card:hover {
+    border-color: #bfdbfe;
+
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+
+    transform: translateY(-2px);
+}
+
+#jobsList .job-card h3 {
+    color: #111827;
+    font-size: 20px;
+    margin-bottom: 12px;
+}
+
+#jobsList .job-card p {
+    color: #4b5563;
+
+    font-size: 14px;
+    line-height: 1.6;
+
+    margin-bottom: 7px;
+}
+
+#jobsList .job-card strong {
+    color: #111827;
+}
+
+#jobsList .job-card button {
+    width: auto;
+    margin-top: 12px;
+}
+
+
+/* ================= EMPLOYER TOOLS ================= */
+
+.employer-tools {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 20px;
+    margin-bottom: 45px;
+}
+
+.employer-tool-card {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 15px;
+
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 14px;
+
+    padding: 23px;
+}
+
+.employer-tool-icon {
+    width: 45px;
+    height: 45px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #ffffff;
+    border-radius: 10px;
+
+    font-size: 20px;
+}
+
+.employer-tool-card h3 {
+    font-size: 17px;
+    margin-bottom: 6px;
+}
+
+.employer-tool-card p {
+    color: #64748b;
+
+    font-size: 13px;
+    line-height: 1.55;
+
+    margin-bottom: 8px;
+}
+
+.employer-tool-card a {
+    color: #2563eb;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+/* ================= WORKFLOW ================= */
+
+.employer-workflow {
+    background: #f8fafc;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+
+    padding: 30px;
+}
+
+.employer-workflow-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 18px;
+}
+
+.employer-workflow-card {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+
+    padding: 22px;
+
+    text-align: center;
+}
+
+.employer-workflow-card span {
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 auto 14px;
+
+    border-radius: 50%;
+
+    background: #2563eb;
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.employer-workflow-card h3 {
+    font-size: 16px;
+    margin-bottom: 7px;
+}
+
+.employer-workflow-card p {
+    color: #6b7280;
+
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 900px) {
+
+    .employer-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .employer-tools {
+        grid-template-columns: 1fr;
+    }
+
+    .employer-workflow-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .employer-page {
+        padding: 30px 18px 50px;
+    }
+
+    .employer-welcome {
+        padding: 28px;
+
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .employer-welcome h1 {
+        font-size: 29px;
+    }
+
+    .employer-primary-button {
+        width: 100%;
+    }
+
+    .employer-section-heading {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .secondary-action {
+        width: 100%;
+        text-align: center;
+    }
+
+    .employer-workflow {
+        padding: 22px;
+    }
+
+}

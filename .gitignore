@@ -1,0 +1,16 @@
+# Maven build output
+/target/
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+python-ml-service/.venv/
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+
+# Local resume uploads and test document
+/uploads/resumes/
+/hirebaseTestResume.docx.docx

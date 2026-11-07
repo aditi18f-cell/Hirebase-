@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Job Details - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/job-details.css" />
+      <link rel="stylesheet" href="css/polish.css?v=20261026-job-details-premium-v2" />
+  </head>
+
+  <body>
+    <!-- ================= HEADER ================= -->
+
+    <header class="app-header">
+      <a href="job-seeker-dashboard.html" class="app-logo">
+        Hire<span>base</span>
+      </a>
+
+      <nav class="app-nav">
+        <a href="job-seeker-dashboard.html">Dashboard</a>
+        <a href="search-jobs.html" class="active">Find Jobs</a>
+        <a href="saved-jobs.html">Saved Jobs</a>
+        <a href="profile.html?v=20261026-search-nav-polish-v1">My Profile</a>
+        <a href="login.html" onclick="localStorage.clear()">Logout</a>
+      </nav>
+    </header>
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="job-details-page">
+
+      <!-- Page heading -->
+
+      <section class="job-details-header">
+        <div>
+          <p class="job-details-label">JOB OPPORTUNITY</p>
+
+          <h1>Job Details</h1>
+
+          <p>
+            Review the role, compare its skills with your profile, and inspect an estimate of resume alignment.
+          </p>
+        </div>
+
+        <a href="search-jobs.html" class="back-jobs-link">
+          <span aria-hidden="true">←</span> Back to jobs
+        </a>
+      </section>
+
+
+      <!-- ================= MESSAGE ================= -->
+
+      <div id="message"></div>
+
+
+      <!-- ================= JOB DETAILS ================= -->
+
+      <section class="job-details-card">
+
+        <div id="jobDetails">
+          <!-- Job details will be displayed here dynamically -->
+        </div>
+
+        <div class="job-action-area">
+
+          <button id="saveJobBtn">
+            Save job
+          </button>
+
+          <button id="applyJobBtn">
+            Apply now
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <!-- ================= ATS ================= -->
+
+      <section id="atsSection" class="ats-card">
+
+        <div class="ats-header">
+
+          <div class="ats-icon">
+            ATS
+          </div>
+
+          <div>
+
+            <p class="section-label">
+              RESUME ANALYSIS
+            </p>
+
+            <h2>
+              Resume alignment estimate
+            </h2>
+
+            <p>
+            Compare required skills, job language, resume structure, and evidence of results. This is guidance, not an employer ATS decision or a hiring prediction.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="ats-action">
+
+          <button id="checkAtsBtn">
+            Analyze my resume
+          </button>
+
+        </div>
+
+
+        <div id="atsResult">
+          <!-- ATS result will be displayed here dynamically -->
+        </div>
+
+      </section>
+
+
+      <!-- ================= SKILL GAP INFO ================= -->
+
+      <section class="job-feature-info" aria-label="Role skill plan"></section>
+
+    </main>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer class="app-footer">
+
+      <div>
+
+        <strong>
+          Hire<span>base</span>
+        </strong>
+
+        <p>
+          Smart job portal with career tools.
+        </p>
+
+      </div>
+
+      <p>
+        © 2026 Hirebase
+      </p>
+
+    </footer>
+
+
+    <script src="script.js?v=20261026-job-details-premium-v1"></script>
+
+  </body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Employer Dashboard - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/employer.css" />
+      <link rel="stylesheet" href="css/polish.css?v=20261026-dashboard-workspace-v1" />
+  </head>
+
+  <body>
+    <!-- ================= HEADER ================= -->
+
+    <header class="app-header">
+      <a href="../index.html" class="app-logo"> Hire<span>base</span> </a>
+
+      <nav class="app-nav">
+        <a href="employer-dashboard.html" class="active">Dashboard</a>
+        <a href="post-job.html">Post a Job</a>
+        <a href="employer-profile.html?v=20261026-dashboard-workspace-v1">Company Profile</a>
+        <a href="login.html" onclick="localStorage.clear()">Logout</a>
+      </nav>
+    </header>
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="employer-page employer-dashboard">
+      <section class="employer-welcome">
+        <div class="employer-welcome-copy">
+          <p class="employer-label">HIRING WORKSPACE</p>
+          <h1>Hiring overview</h1>
+          <p>Manage your open roles and review candidates in one place.</p>
+          <p class="dashboard-account-identity" id="dashboardAccountIdentity">Loading account details...</p>
+        </div>
+        <button id="postJobBtn" class="employer-primary-button">Post a job</button>
+      </section>
+
+      <div id="message"></div>
+
+      <section class="employer-stats" aria-label="Hiring overview">
+        <article class="employer-stat-card">
+          <span class="employer-stat-kicker">OPEN ROLES</span>
+          <strong id="dashboardPostedJobCount">--</strong>
+          <span class="employer-stat-description">Jobs posted by your company</span>
+        </article>
+        <article class="employer-stat-card">
+          <span class="employer-stat-kicker">APPLICATIONS</span>
+          <strong id="dashboardEmployerApplicationCount">--</strong>
+          <span class="employer-stat-description">Candidates across your roles</span>
+        </article>
+        <article class="employer-stat-card">
+          <span class="employer-stat-kicker">TO REVIEW</span>
+          <strong id="dashboardPendingCount">--</strong>
+          <span class="employer-stat-description">Awaiting a decision</span>
+        </article>
+      </section>
+
+      <section class="employer-section" aria-labelledby="employerJobsTitle">
+        <div class="employer-section-heading">
+          <div>
+            <p class="section-label">YOUR OPENINGS</p>
+            <h2 id="employerJobsTitle">Roles and applicants</h2>
+            <p>Review candidate details, open resumes, and record your decisions.</p>
+          </div>
+          <a href="post-job.html" class="secondary-action">Create another role</a>
+        </div>
+        <div id="employerJobs">
+          <div id="jobsList">
+            <p>Loading your roles...</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer class="app-footer">
+      <div>
+        <strong> Hire<span>base</span> </strong>
+
+        <p>Smart job portal with career tools.</p>
+      </div>
+
+      <p>2026 Hirebase</p>
+    </footer>
+
+    <script src="script.js?v=20261026-saved-resume-v2"></script>
+  </body>
+</html>

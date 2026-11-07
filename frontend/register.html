@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Create your account - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/auth.css" />
+
+    <link rel="stylesheet" href="css/polish.css?v=20261026-register-premium-v3" />
+    <link rel="stylesheet" href="css/auth-premium.css?v=20261026-auth-premium-v1" />
+  </head>
+
+  <body class="register-page">
+
+    <header class="register-topbar">
+      <a class="register-brand" href="../index.html" aria-label="Hirebase home">Hirebase<span>.</span></a>
+      <p>Already have an account? <a href="login.html">Sign in</a></p>
+    </header>
+
+    <main class="register-layout">
+      <section class="register-intro" aria-labelledby="registerIntroTitle">
+        <p class="register-eyebrow">YOUR NEXT CHAPTER</p>
+        <h1 id="registerIntroTitle">A clearer path to your next opportunity.</h1>
+        <p class="register-lede">Create your Hirebase account to find roles, manage applications, or connect with candidates.</p>
+        <ul class="register-benefits">
+          <li><span>01</span> Find opportunities by skill and experience</li>
+          <li><span>02</span> Keep your applications organized</li>
+          <li><span>03</span> Manage hiring from one workspace</li>
+        </ul>
+      </section>
+
+    <div class="container register-card">
+      <p class="register-step">GET STARTED</p>
+
+      <h2 class="account-heading" id="registerHeading">
+        Create your account
+      </h2>
+
+      <p class="account-description" id="registerDescription">
+        Set up your profile and find opportunities that fit your goals.
+      </p>
+
+      <form id="registerForm">
+
+        <!-- ACCOUNT TYPE -->
+        <div class="form-group">
+          <p class="register-role-label" id="roleChoiceLabel">Choose how you will use Hirebase</p>
+
+          <div class="register-type" role="radiogroup" aria-labelledby="roleChoiceLabel">
+
+            <label class="type-option active" id="jobSeekerOption">
+              <input
+                type="radio"
+                name="userType"
+                value="job_seeker"
+                checked
+                aria-label="Job seeker"
+              />
+              <span class="role-title">Job seeker</span>
+              <span class="role-description">Find roles and manage applications</span>
+            </label>
+
+            <label class="type-option" id="employerOption">
+              <input
+                type="radio"
+                name="userType"
+                value="employer"
+                aria-label="Employer"
+              />
+              <span class="role-title">Employer</span>
+              <span class="role-description">Post jobs and meet candidates</span>
+            </label>
+
+          </div>
+        </div>
+
+
+        <div class="register-fields-grid">
+        <!-- FULL NAME -->
+        <div class="form-group">
+          <label for="fullName" id="fullNameLabel">
+            Full Name:
+          </label>
+
+          <input
+            type="text"
+            id="fullName"
+            name="fullName"
+            autocomplete="name"
+            placeholder="Your full name"
+            required
+          />
+        </div>
+
+
+        <!-- EMAIL -->
+        <div class="form-group">
+
+          <label for="email">
+            Email:
+          </label>
+
+          <input
+            type="email"
+            id="email"
+            name="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            required
+          />
+
+        </div>
+
+
+        <!-- PASSWORD -->
+        <div class="form-group">
+
+          <label for="password">
+            Password:
+          </label>
+
+          <input
+            type="password"
+            id="password"
+            name="password"
+            autocomplete="new-password"
+            placeholder="Create a password"
+            required
+          />
+
+        </div>
+
+
+        <!-- PHONE -->
+        <div class="form-group">
+
+          <label for="phone">
+            Phone:
+          </label>
+
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            autocomplete="tel"
+            placeholder="Phone number (optional)"
+          />
+
+        </div>
+
+
+        <!-- ADDRESS -->
+        <div class="form-group full-width">
+
+          <label for="address">
+            Address:
+          </label>
+
+          <textarea
+            id="address"
+            name="address"
+            rows="3"
+            placeholder="City or address (optional)"
+          ></textarea>
+
+        </div>
+
+
+        <!-- COMPANY INFORMATION -->
+        <div
+          id="companySection"
+          class="company-section full-width"
+          style="display: none;"
+        >
+
+          <div class="company-section-heading"><p>COMPANY PROFILE</p><h3>Company information</h3><span>Add the details candidates will recognize.</span></div>
+
+          <div class="company-fields-grid">
+
+          <div id="companyNameGroup" class="form-group">
+
+            <label for="companyName">
+              Company Name:
+            </label>
+
+            <input
+              type="text"
+              id="companyName"
+              name="companyName"
+            />
+
+          </div>
+
+          <div id="websiteGroup" class="form-group">
+
+            <label for="website">
+              Company Website:
+            </label>
+
+            <input
+              type="url"
+              id="website"
+              name="website"
+              placeholder="https://example.com"
+            />
+
+          </div>
+
+          </div>
+
+        </div>
+        </div>
+
+
+        <!-- REGISTER BUTTON -->
+        <button type="submit" id="registerButton">
+          Create job seeker account
+        </button>
+
+      </form>
+
+
+      <!-- MESSAGE -->
+      <p id="message" aria-live="polite"></p>
+
+
+      <!-- LOGIN -->
+      <p class="register-login-link">
+        <a href="login.html">
+          Already have an account? Login here
+        </a>
+      </p>
+
+    </div>
+    </main>
+
+
+    <script src="script.js?v=20261026-register-premium-v1"></script>
+
+
+    <!-- REGISTRATION UI -->
+    <script>
+
+      const jobSeekerRadio =
+        document.querySelector(
+          'input[name="userType"][value="job_seeker"]'
+        );
+
+      const employerRadio =
+        document.querySelector(
+          'input[name="userType"][value="employer"]'
+        );
+
+      const companySection =
+        document.getElementById("companySection");
+
+      const fullNameLabel =
+        document.getElementById("fullNameLabel");
+
+      const registerHeading =
+        document.getElementById("registerHeading");
+
+      const registerDescription =
+        document.getElementById("registerDescription");
+
+      const registerButton =
+        document.getElementById("registerButton");
+
+      const jobSeekerOption =
+        document.getElementById("jobSeekerOption");
+
+      const employerOption =
+        document.getElementById("employerOption");
+
+      const companyName =
+        document.getElementById("companyName");
+
+
+      function updateRegistrationForm() {
+
+        if (employerRadio.checked) {
+
+          /* COMPANY */
+
+          companySection.style.display = "block";
+
+          companyName.required = true;
+
+          fullNameLabel.textContent =
+            "Contact Person Name:";
+
+          registerHeading.textContent =
+            "Create your employer account";
+
+          registerDescription.textContent =
+            "Create an employer profile to post roles and review applications.";
+
+          registerButton.textContent =
+            "Create employer account";
+
+          jobSeekerOption.classList.remove("active");
+
+          employerOption.classList.add("active");
+
+        } else {
+
+          /* JOB SEEKER */
+
+          companySection.style.display = "none";
+
+          companyName.required = false;
+
+          fullNameLabel.textContent =
+            "Full Name:";
+
+          registerHeading.textContent =
+            "Create your account";
+
+          registerDescription.textContent =
+            "Set up your profile and start exploring relevant roles.";
+
+          registerButton.textContent =
+            "Create job seeker account";
+
+          employerOption.classList.remove("active");
+
+          jobSeekerOption.classList.add("active");
+
+        }
+
+      }
+
+
+      jobSeekerRadio.addEventListener(
+        "change",
+        updateRegistrationForm
+      );
+
+      employerRadio.addEventListener(
+        "change",
+        updateRegistrationForm
+      );
+
+
+      updateRegistrationForm();
+
+    </script>
+
+  </body>
+</html>

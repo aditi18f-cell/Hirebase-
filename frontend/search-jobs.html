@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Find Jobs - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/jobs.css" />
+      <link rel="stylesheet" href="css/polish.css?v=20261026-minimal-actions-v1" />
+  </head>
+
+  <body>
+    <!-- ================= HEADER ================= -->
+
+    <header class="app-header">
+      <a href="job-seeker-dashboard.html" class="app-logo">
+        Hire<span>base</span>
+      </a>
+
+      <nav class="app-nav">
+        <a href="job-seeker-dashboard.html">Dashboard</a>
+        <a href="search-jobs.html" class="active">Find Jobs</a>
+        <a href="saved-jobs.html">Saved Jobs</a>
+        <a href="profile.html?v=20261026-search-nav-polish-v1">My Profile</a>
+        <a href="login.html" onclick="localStorage.clear()">Logout</a>
+      </nav>
+    </header>
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="jobs-page">
+      <!-- Page heading -->
+
+      <section class="jobs-header">
+        <div>
+          <p class="jobs-label">CAREER OPPORTUNITIES</p>
+
+          <h1>Find Your Next Opportunity</h1>
+
+          <p>
+            Explore current openings by role, company, location, or skill.
+          </p>
+        </div>
+      </section>
+
+      <!-- ================= SEARCH ================= -->
+
+      <section class="job-search-box">
+        <form id="searchForm">
+          <div class="search-input-area">
+            <label for="keyword">Search roles</label>
+
+            <div class="search-row">
+              <input
+                type="text"
+                id="keyword"
+                name="keyword"
+                placeholder="Try a job title, company, location, or skill"
+                autocomplete="off"
+              />
+
+              <button type="submit" class="jobs-search-submit">Search jobs</button>
+            </div>
+          </div>
+        </form>
+
+        <div id="message"></div>
+      </section>
+
+      <!-- ================= JOB LISTINGS ================= -->
+
+      <section class="jobs-results">
+        <div class="results-heading">
+          <div>
+            <p class="results-eyebrow">CURATED FOR YOUR SEARCH</p>
+            <h2>Open opportunities</h2>
+
+            <p>Review the role, requirements, and application details.</p>
+          </div>
+          <span class="jobs-count" id="jobsCount" aria-live="polite">Loading roles</span>
+        </div>
+
+        <div id="jobListings">
+          <!-- Jobs will be displayed here dynamically -->
+        </div>
+      </section>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer class="app-footer">
+      <div>
+        <strong> Hire<span>base</span> </strong>
+
+        <p>Smart job portal with career tools.</p>
+      </div>
+
+      <p>© 2026 Hirebase</p>
+    </footer>
+
+    <script src="script.js?v=20261026-find-jobs-premium-v1"></script>
+  </body>
+</html>

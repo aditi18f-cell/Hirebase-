@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Login - Hirebase</title>
+
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/auth.css" />
+      <link rel="stylesheet" href="css/polish.css?v=20261026-login-company-polish-v1" />
+      <link rel="stylesheet" href="css/auth-premium.css?v=20261026-auth-premium-v1" />
+  </head>
+
+  <body>
+    <div class="auth-page">
+      <!-- Left Side -->
+      <div class="auth-info">
+        <a href="../index.html" class="auth-logo"> Hire<span>base</span> </a>
+
+        <h1>
+          Welcome back to
+          <span>Hirebase</span>
+        </h1>
+
+        <p>
+          Pick up where you left off: explore roles, keep your profile current,
+          and follow the applications you have sent.
+        </p>
+
+        <div class="auth-features">
+          <div class="auth-feature"><span aria-hidden="true">01</span>Smart job matching</div>
+          <div class="auth-feature"><span aria-hidden="true">02</span>Resume analysis and feedback</div>
+          <div class="auth-feature"><span aria-hidden="true">03</span>Role-specific skill plans</div>
+        </div>
+      </div>
+
+      <!-- Login Card -->
+      <div class="auth-card">
+        <div class="auth-card-header">
+          <h2>Login</h2>
+
+          <p>Sign in with the email you used to create your account.</p>
+        </div>
+
+        <div id="message"></div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="email"> Email Address </label>
+
+            <input
+              type="email"
+              id="email"
+              name="email"
+              autocomplete="email"
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password"> Password </label>
+
+            <input
+              type="password"
+              id="password"
+              name="password"
+              autocomplete="current-password"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+
+          <p class="login-hint">We will open the account associated with your email.</p>
+
+          <button type="submit" class="auth-button">Login</button>
+        </form>
+
+        <div class="auth-divider">
+          <span>OR</span>
+        </div>
+
+        <p class="auth-register">
+          Don't have an account?
+
+          <a href="register.html"> Create an account </a>
+        </p>
+
+        <a href="../index.html" class="back-home">Back to Hirebase</a>
+      </div>
+    </div>
+
+    <script src="script.js?v=20261026-login-company-polish-v1"></script>
+  </body>
+</html>

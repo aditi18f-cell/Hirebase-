@@ -1,0 +1,236 @@
+/* =========================================================
+   HIREBASE - POST JOB
+   ========================================================= */
+
+
+/* ================= PAGE CONTAINER ================= */
+
+.post-job-container {
+    width: 92%;
+    max-width: 900px;
+    margin: 40px auto 60px;
+}
+
+
+/* ================= HEADER ================= */
+
+.post-job-header {
+    margin-bottom: 22px;
+}
+
+.post-job-header h1 {
+    margin: 0 0 6px;
+    font-size: 32px;
+}
+
+.post-job-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+
+/* ================= FORM CARD ================= */
+
+.post-job-card {
+    background: #ffffff;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+
+    padding: 30px;
+
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.06);
+}
+
+
+/* ================= FORM ================= */
+
+.post-job-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+
+/* Full width fields */
+
+.post-job-form .full-width {
+    grid-column: 1 / -1;
+}
+
+
+/* ================= FORM GROUP ================= */
+
+.post-job-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+
+/* ================= LABEL ================= */
+
+.post-job-form label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+
+/* ================= INPUTS ================= */
+
+.post-job-form input,
+.post-job-form textarea,
+.post-job-form select {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 12px 14px;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    color: #1e293b;
+
+    font-size: 14px;
+
+    outline: none;
+}
+
+
+/* ================= TEXTAREA ================= */
+
+.post-job-form textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+
+/* ================= FOCUS ================= */
+
+.post-job-form input:focus,
+.post-job-form textarea:focus,
+.post-job-form select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+
+/* ================= HINT ================= */
+
+.form-hint {
+    margin-top: 0;
+
+    color: #94a3b8;
+
+    font-size: 12px;
+}
+
+
+/* ================= ACTIONS ================= */
+
+.post-job-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-top: 4px;
+}
+
+
+/* ================= POST BUTTON ================= */
+
+.post-job-actions button {
+    width: auto;
+
+    padding: 11px 22px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #2563eb;
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+/* ================= BUTTON HOVER ================= */
+
+.post-job-actions button:hover {
+    background: #1d4ed8;
+}
+
+
+/* ================= CANCEL ================= */
+
+.post-job-actions a {
+    padding: 11px 20px;
+
+    background: #f1f5f9;
+    color: #475569;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    text-decoration: none;
+}
+
+
+.post-job-actions a:hover {
+    background: #e2e8f0;
+}
+
+
+/* ================= MESSAGE ================= */
+
+.post-job-message {
+    margin-bottom: 20px;
+
+    padding: 0;
+
+    font-size: 14px;
+}
+
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 700px) {
+
+    .post-job-container {
+        width: 92%;
+        margin: 25px auto 40px;
+    }
+
+    .post-job-card {
+        padding: 22px;
+    }
+
+    .post-job-form {
+        grid-template-columns: 1fr;
+    }
+
+    .post-job-form .full-width {
+        grid-column: auto;
+    }
+
+    .post-job-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .post-job-actions button,
+    .post-job-actions a {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+}

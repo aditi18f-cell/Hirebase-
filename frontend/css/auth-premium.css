@@ -1,0 +1,142 @@
+/* Shared color and motion language for sign-in and account creation. */
+:root {
+  --auth-blue: #315fe5;
+  --auth-violet: #6556c8;
+  --auth-teal: #279889;
+  --auth-amber: #d99a54;
+  --auth-ink: #17283c;
+}
+
+@keyframes auth-rise-in {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes auth-orb-drift {
+  from { transform: translate3d(-7px, 0, 0) scale(.98); }
+  to { transform: translate3d(12px, 13px, 0) scale(1.04); }
+}
+
+body:has(#loginForm), body.register-page {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+  background:
+    radial-gradient(ellipse at 12% 15%, rgba(100, 119, 238, .15), transparent 38%),
+    radial-gradient(ellipse at 88% 86%, rgba(39, 152, 137, .12), transparent 34%),
+    linear-gradient(125deg, #f4f6ff 0%, #f8f8fc 53%, #f0f8f6 100%);
+}
+
+body:has(#loginForm)::before, body.register-page::before {
+  position: fixed;
+  z-index: -1;
+  top: -190px;
+  right: -150px;
+  width: 470px;
+  height: 470px;
+  border: 1px solid rgba(101, 86, 200, .13);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+  animation: auth-orb-drift 13s ease-in-out infinite alternate;
+}
+
+body:has(#loginForm)::after, body.register-page::after {
+  position: fixed;
+  z-index: -1;
+  bottom: -210px;
+  left: -140px;
+  width: 390px;
+  height: 390px;
+  border: 1px solid rgba(39, 152, 137, .15);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+  animation: auth-orb-drift 16s ease-in-out infinite alternate-reverse;
+}
+
+body:has(#loginForm) .auth-page { position: relative; z-index: 0; background: transparent; }
+body:has(#loginForm) .auth-info { animation: auth-rise-in .65s cubic-bezier(.2,.7,.2,1) both; }
+body:has(#loginForm) .auth-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(209, 218, 239, .9);
+  border-radius: 17px;
+  box-shadow: 0 22px 60px rgba(38, 54, 105, .11), 0 3px 12px rgba(38, 54, 105, .04);
+  animation: auth-rise-in .72s .08s cubic-bezier(.2,.7,.2,1) both;
+}
+body:has(#loginForm) .auth-card::before, .register-card::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--auth-blue), var(--auth-violet) 52%, var(--auth-teal));
+  content: "";
+}
+body:has(#loginForm) .auth-logo span, body:has(#loginForm) .auth-info h1 span { color: var(--auth-blue); }
+body:has(#loginForm) .auth-info h1 { color: var(--auth-ink); }
+body:has(#loginForm) .auth-feature span {
+  border-color: #dfe5ff;
+  background: #eef1ff;
+  color: var(--auth-blue);
+}
+body:has(#loginForm) .auth-feature:nth-child(2) span { border-color: #e7dff8; background: #f4efff; color: var(--auth-violet); }
+body:has(#loginForm) .auth-feature:nth-child(3) span { border-color: #d7eee8; background: #edf8f5; color: var(--auth-teal); }
+body:has(#loginForm) #loginForm input:focus { border-color: var(--auth-blue); box-shadow: 0 0 0 4px rgba(49, 95, 229, .11); }
+body:has(#loginForm) #loginForm .auth-button {
+  border-color: var(--auth-blue);
+  background: linear-gradient(115deg, var(--auth-blue), var(--auth-violet));
+  box-shadow: 0 7px 17px rgba(75, 87, 198, .2);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+body:has(#loginForm) #loginForm .auth-button:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(75, 87, 198, .25); filter: saturate(1.08); }
+body:has(#loginForm) .auth-register a, body:has(#loginForm) .back-home:hover { color: var(--auth-blue); }
+
+body.register-page .register-topbar, body.register-page .register-layout { position: relative; z-index: 0; }
+body.register-page .register-topbar { border-color: rgba(204, 214, 234, .82); }
+body.register-page .register-brand span, body.register-page .register-topbar p a { color: var(--auth-blue); }
+body.register-page .register-intro { animation: auth-rise-in .65s cubic-bezier(.2,.7,.2,1) both; }
+body.register-page .register-eyebrow, body.register-page .register-step { color: var(--auth-violet); }
+body.register-page .register-intro h1 { color: var(--auth-ink); }
+body.register-page .register-benefits li:nth-child(1) span { border-color: #dfe5ff; background: #eef1ff; color: var(--auth-blue); }
+body.register-page .register-benefits li:nth-child(2) span { border-color: #e7dff8; background: #f4efff; color: var(--auth-violet); }
+body.register-page .register-benefits li:nth-child(3) span { border-color: #d7eee8; background: #edf8f5; color: var(--auth-teal); }
+body.register-page .register-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(209, 218, 239, .95);
+  border-radius: 17px;
+  box-shadow: 0 22px 60px rgba(38, 54, 105, .11), 0 3px 12px rgba(38, 54, 105, .04);
+  animation: auth-rise-in .72s .08s cubic-bezier(.2,.7,.2,1) both;
+}
+body.register-page .register-card .type-option { transition: border-color .18s ease, background .18s ease, transform .18s ease; }
+body.register-page .register-card .type-option:hover { transform: translateY(-1px); border-color: #aebcf2; background: #f9f9ff; }
+body.register-page .register-card .type-option.active { border-color: var(--auth-blue); background: linear-gradient(120deg, #eff2ff, #f8f5ff); box-shadow: inset 0 0 0 1px var(--auth-blue); }
+body.register-page .register-card .type-option input { accent-color: var(--auth-blue); }
+body.register-page .register-card input:not([type="radio"]):focus,
+body.register-page .register-card textarea:focus { border-color: var(--auth-blue); box-shadow: 0 0 0 4px rgba(49, 95, 229, .1); }
+body.register-page .register-card #registerButton {
+  border-color: var(--auth-blue);
+  background: linear-gradient(115deg, var(--auth-blue), var(--auth-violet));
+  box-shadow: 0 7px 17px rgba(75, 87, 198, .2);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+body.register-page .register-card #registerButton:hover { transform: translateY(-1px); border-color: var(--auth-violet); background: linear-gradient(115deg, #294fc8, #5748b2); box-shadow: 0 10px 22px rgba(75, 87, 198, .25); }
+
+@media (max-width: 600px) {
+  body:has(#loginForm) .auth-card, body.register-page .register-card { border-radius: 14px; }
+  body:has(#loginForm)::before, body.register-page::before { top: -260px; right: -240px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:has(#loginForm)::before, body:has(#loginForm)::after,
+  body.register-page::before, body.register-page::after,
+  body:has(#loginForm) .auth-info, body:has(#loginForm) .auth-card,
+  body.register-page .register-intro, body.register-page .register-card {
+    animation: none !important;
+  }
+  body:has(#loginForm) #loginForm .auth-button,
+  body.register-page .register-card .type-option,
+  body.register-page .register-card #registerButton { transition: none !important; }
+}
