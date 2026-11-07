@@ -6,11 +6,7 @@ public class DbConnect {
 
     private static final String URL = System.getenv().getOrDefault(
             "HIREBASE_DB_URL",
-<<<<<<< HEAD
             "jdbc:mysql://127.0.0.1:3306/hirebase?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
-=======
-            "jdbc:mysql://127.0.0.1:3306/hirirebase?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
->>>>>>> 85d6c2bcd3687a7f4d5a5e5c8b654fc259e0aa81
     );
     private static final String USERNAME = System.getenv().getOrDefault("HIREBASE_DB_USERNAME", "root");
 
