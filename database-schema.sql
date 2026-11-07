@@ -1,6 +1,9 @@
 -- Hirebase Database Schema
+<<<<<<< HEAD
 CREATE DATABASE IF NOT EXISTS hirebase;
 USE hirebase;
+=======
+>>>>>>> 85d6c2bcd3687a7f4d5a5e5c8b654fc259e0aa81
 
 -- Table for Job Seekers
 CREATE TABLE job_seeker (
